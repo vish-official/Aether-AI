@@ -26,6 +26,17 @@ Any modification to Aether's codebase must align with and trace back to the prin
   * Architectural scalability models (scaling down to wearables, scaling out to local server meshes).
   * Invariant failure handling routines (NPU exhaustion, database lockouts, network drops).
 
+### [03_Component_Diagram.md - Component Spectrum & Schematics](03_Component_Diagram.md)
+* **Status:** 🟢 APPROVED / ACTIVE  
+* **Abstract:** Visually maps Aether's component system, layer communication flows, request routes, downward module dependencies, event progressions, and modular future expansion paths.
+* **Key Content:**
+  * Multi-terminal physical device connectivity and data flow topologies.
+  * Asynchronous event routing and internal subsystem connection paths.
+  * 8-Layer architecture vertical descriptions.
+  * Sequenced execution path schematics for Voice, Chat, Tool Sandboxing, Memory Retrieval, and Device Control.
+  * Module dependency restrictions (downward layout, no circularity).
+  * Pluggable schema architectures for Robotics, Vehicles, and Wearables.
+
 ---
 
 ## 🔮 Coming Soon (Future System Specifications)
