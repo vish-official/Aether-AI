@@ -24,7 +24,22 @@ export class CoreEngine {
     this.loader = loader;
   }
 
+  public subscribeToEvents(eventBus: EventBus): void {
+    eventBus.subscribe('modules.loaded', async () => {
+      this.logger.info('CoreEngine', '[Event Reactive] Captured modules.loaded. Initiating CoreEngine boot...');
+      try {
+        await this.boot();
+      } catch (err: any) {
+        this.logger.fatal('CoreEngine', `Failed to boot engine reactively: ${err.message}`);
+      }
+    });
+  }
+
   public async boot(): Promise<void> {
+    if (this.state === 'RUNNING' || this.state === 'BOOTING') {
+      return;
+    }
+
     if (this.state !== 'UNINITIALIZED') {
       throw new Error(`Invalid state transition. Cannot boot from [${this.state}]`);
     }
@@ -33,33 +48,26 @@ export class CoreEngine {
     this.logger.info('CoreEngine', 'Core engine booting sequence started...');
 
     try {
-      // Create promises that resolve when respective module-ready events are received on the Event Bus
-      const readyEvents = ['identity:ready', 'storage:ready', 'security:ready'];
-      const readyPromises = readyEvents.map(eventType => {
-        return new Promise<void>((resolve) => {
-          const unsubscribe = this.eventBus.subscribe(eventType, (event) => {
-            this.logger.info('CoreEngine', `[Event Intercepted] Captured ${eventType} from ${event.source}`);
-            unsubscribe();
-            resolve();
-          });
-        });
-      });
-
-      // Announce boot
-      this.eventBus.publish('system:boot_started', 'CoreEngine', {
-        systemName: this.config.get('systemName'),
-        version: this.config.get('version'),
-      });
-
-      // Loading Modules via the ModuleLoader
-      const loadAllPromise = this.loader.loadAll();
-
-      // Wait for both loadAll to complete and all required module-ready events to be published on the Event Bus
-      await Promise.all([loadAllPromise, ...readyPromises]);
+      // Legacy compatibility check: If modules are not loaded, load them
+      if (!this.loader.isLoaded()) {
+        await this.loader.loadAll();
+      }
 
       this.state = 'RUNNING';
       this.logger.info('CoreEngine', 'Aether Core engine is now RUNNING.');
-      
+
+      // Publish Sprint 2 events
+      this.eventBus.publish('engine.started', 'CoreEngine', {
+        status: 'healthy',
+        timestamp: new Date().toISOString()
+      });
+
+      this.eventBus.publish('system.ready', 'CoreEngine', {
+        status: 'secure_and_healthy',
+        timestamp: new Date().toISOString()
+      });
+
+      // Legacy boot complete
       this.eventBus.publish('system:boot_complete', 'CoreEngine', {
         status: 'healthy',
         timestamp: new Date().toISOString()

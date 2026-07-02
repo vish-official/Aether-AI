@@ -58,16 +58,15 @@ class SecurityEnclaveModule implements IModule {
 // --- Main CLI Bootstrap Executor ---
 
 export async function runBootstrap(): Promise<CoreEngine> {
-  // 1. Load configuration
+  // 1. Start event bus first (communication backbone)
+  const eventBus = new EventBus();
+
+  // 2. Instantiate ConfigurationManager and subscribe it to system.boot.start
   const config = new ConfigurationManager();
-  
-  // 2. Start logger
-  const logger = new Logger(config.get('logLevel'));
+  config.subscribeToEvents(eventBus);
 
-  // 3. Start event bus
-  const eventBus = new EventBus(logger);
-
-  // Set up logger to listen directly to system-wide lifecycle events via the Event Bus
+  // 3. Instantiate Logger (starting with minimal INFO level, will automatically set itself when config.loaded fires)
+  const logger = new Logger('INFO');
   logger.subscribeToEvents(eventBus);
 
   // Set up dynamic global event listener to output to console for auditing
@@ -75,36 +74,44 @@ export async function runBootstrap(): Promise<CoreEngine> {
     logger.debug('AuditTrail', `[EVENT: ${event.type}] from [${event.source}]`);
   });
 
-  // Now configuration is loaded and event bus is ready, publish config:loaded
-  config.publishLoaded(eventBus);
-
-  logger.info('Bootstrap', '------------------------------------------------------------');
-  logger.info('Bootstrap', '🌟 INITIATING AETHER CORE BOOTSTRAP PROTOCOL (SPRINT 1) 🌟');
-  logger.info('Bootstrap', '------------------------------------------------------------');
-  logger.info('Bootstrap', `System: ${config.get('systemName')} | Version: ${config.get('version')} | Env: ${config.get('environment')}`);
-
-  // 4. Create context & Load modules via ModuleLoader
+  // 4. Create context & ModuleLoader and subscribe it to logger.ready
   const context: ModuleContext = { logger, eventBus };
   const loader = new ModuleLoader(context);
+  loader.subscribeToEvents(eventBus);
 
-  // Register only the Sprint 1 approved core components
+  // Register only the approved core components
   loader.register(new IdentityBridgeModule());
   loader.register(new StorageAdapterModule());
   loader.register(new SecurityEnclaveModule());
 
-  // 5. Start core engine
+  // 5. Instantiate CoreEngine and subscribe it to modules.loaded
   const engine = new CoreEngine(config, logger, eventBus, loader);
-  
-  // Track system status
-  eventBus.subscribe('system:boot_complete', () => {
-    logger.info('Bootstrap', '------------------------------------------------------------');
-    logger.info('Bootstrap', '✅ AETHER SYSTEM STATUS: SECURE & HEALTHY');
-    logger.info('Bootstrap', `Active State: ${engine.getStatus().state}`);
-    logger.info('Bootstrap', `Modules Registered & Loaded: ${engine.getStatus().loadedModules.join(', ')}`);
-    logger.info('Bootstrap', '------------------------------------------------------------');
+  engine.subscribeToEvents(eventBus);
+
+  // Set up ready tracker
+  const readyPromise = new Promise<void>((resolve) => {
+    eventBus.subscribe('system.ready', () => {
+      logger.info('Bootstrap', '------------------------------------------------------------');
+      logger.info('Bootstrap', '✅ AETHER SYSTEM STATUS: SECURE & HEALTHY');
+      logger.info('Bootstrap', `Active State: ${engine.getStatus().state}`);
+      logger.info('Bootstrap', `Modules Registered & Loaded: ${engine.getStatus().loadedModules.join(', ')}`);
+      logger.info('Bootstrap', '------------------------------------------------------------');
+      resolve();
+    });
   });
 
-  await engine.boot();
+  // 6. Kick off the entire reactive bootstrapping protocol by publishing system.boot.start!
+  logger.info('Bootstrap', '------------------------------------------------------------');
+  logger.info('Bootstrap', '🌟 INITIATING AETHER CORE REACTIVE BOOTSTRAP PROTOCOL (SPRINT 2) 🌟');
+  logger.info('Bootstrap', '------------------------------------------------------------');
+
+  eventBus.publish('system.boot.start', 'Bootstrap', {
+    systemName: config.get('systemName'),
+    version: config.get('version'),
+  });
+
+  // Await completion of the reactive boot chain
+  await readyPromise;
 
   return engine;
 }

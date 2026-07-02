@@ -15,9 +15,21 @@ export interface IModule {
 export class ModuleLoader {
   private modules: Map<string, IModule> = new Map();
   private context: ModuleContext;
+  private loaded = false;
 
   constructor(context: ModuleContext) {
     this.context = context;
+  }
+
+  public subscribeToEvents(eventBus: EventBus): void {
+    eventBus.subscribe('logger.ready', async () => {
+      this.context.logger.info('ModuleLoader', '[Event Reactive] Captured logger.ready. Initializing module load sequence...');
+      try {
+        await this.loadAll();
+      } catch (err: any) {
+        this.context.logger.error('ModuleLoader', `Failed reactive loading of modules: ${err.message}`);
+      }
+    });
   }
 
   public register(module: IModule): void {
@@ -30,6 +42,7 @@ export class ModuleLoader {
   }
 
   public async loadAll(): Promise<void> {
+    if (this.loaded) return;
     this.context.logger.info('ModuleLoader', `Loading ${this.modules.size} registered modules...`);
     for (const [name, module] of this.modules) {
       try {
@@ -43,6 +56,15 @@ export class ModuleLoader {
         throw err;
       }
     }
+    this.loaded = true;
+    this.context.eventBus.publish('modules.loaded', 'ModuleLoader', {
+      loadedModules: Array.from(this.modules.keys()),
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  public isLoaded(): boolean {
+    return this.loaded;
   }
 
   public async shutdownAll(): Promise<void> {

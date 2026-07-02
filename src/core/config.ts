@@ -22,6 +22,12 @@ export class ConfigurationManager {
     };
   }
 
+  public subscribeToEvents(eventBus: { subscribe: (type: string, handler: (event: any) => void) => () => void, publish: (type: string, source: string, payload: any) => void }): void {
+    eventBus.subscribe('system.boot.start', () => {
+      this.publishLoaded(eventBus);
+    });
+  }
+
   public get<K extends keyof SystemConfig>(key: K): SystemConfig[K] {
     return this.config[key];
   }
@@ -31,6 +37,7 @@ export class ConfigurationManager {
   }
 
   public publishLoaded(eventBus: { publish: (type: string, source: string, payload: any) => void }): void {
+    eventBus.publish('config.loaded', 'ConfigurationManager', { ...this.config });
     eventBus.publish('config:loaded', 'ConfigurationManager', { ...this.config });
   }
 

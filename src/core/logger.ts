@@ -35,7 +35,36 @@ export class Logger {
     };
   }
 
-  public subscribeToEvents(eventBus: { subscribe: (type: string, handler: (event: any) => void) => () => void }): void {
+  public subscribeToEvents(eventBus: { subscribe: (type: string, handler: (event: any) => void) => () => void, publish: (type: string, source: string, payload: any) => void }): void {
+    eventBus.subscribe('system.boot.start', (event) => {
+      this.info('Logger', `[Observed Event: system.boot.start] Bootstrap initiated.`);
+    });
+
+    eventBus.subscribe('config.loaded', (event) => {
+      if (event.payload && event.payload.logLevel) {
+        this.setLogLevel(event.payload.logLevel);
+      }
+      this.info('Logger', `[Observed Event: config.loaded] System Configuration loaded: ${event.payload.systemName} (v${event.payload.version})`);
+      eventBus.publish('logger.ready', 'Logger', { timestamp: new Date().toISOString() });
+    });
+
+    eventBus.subscribe('logger.ready', () => {
+      this.info('Logger', `[Observed Event: logger.ready] Logger subsystem initialized and ready.`);
+    });
+
+    eventBus.subscribe('modules.loaded', (event) => {
+      this.info('Logger', `[Observed Event: modules.loaded] All registered modules loaded: ${event.payload.loadedModules?.join(', ')}`);
+    });
+
+    eventBus.subscribe('engine.started', () => {
+      this.info('Logger', `[Observed Event: engine.started] Core engine transitioned to RUNNING state.`);
+    });
+
+    eventBus.subscribe('system.ready', () => {
+      this.info('Logger', `[Observed Event: system.ready] System bootstrap fully complete and secure.`);
+    });
+
+    // Legacy backwards compatibility
     eventBus.subscribe('system:boot_started', (event) => {
       this.info('Logger', `[Observed Event: system:boot_started] System ${event.payload.systemName} v${event.payload.version} is starting boot.`);
     });
