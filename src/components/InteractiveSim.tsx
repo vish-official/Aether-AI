@@ -155,6 +155,20 @@ export default function InteractiveSim() {
       ]);
     });
 
+    // 3. Create EventBus
+    const eventBus = new RealEventBus(logger);
+
+    // Subscribe logger directly to system events via the Event Bus
+    logger.subscribeToEvents(eventBus);
+    
+    // Event Bus wildcard listener
+    const unsubscribeEventBus = eventBus.subscribe('*', (event) => {
+      setLogs((prev) => [...prev, `[EVENT_BUS] -> Intercepted Event [${event.type}] from [${event.source}]`]);
+    });
+
+    // Publish configuration loaded event via Event Bus
+    config.publishLoaded(eventBus);
+
     logger.info('Bootstrap', '------------------------------------------------------------');
     logger.info('Bootstrap', '🌟 INITIATING AETHER CORE BOOTSTRAP PROTOCOL (SPRINT 1) 🌟');
     logger.info('Bootstrap', '------------------------------------------------------------');
@@ -162,14 +176,6 @@ export default function InteractiveSim() {
     
     setSimStepIndex(1);
     await new Promise(r => setTimeout(r, 800));
-
-    // 3. Create EventBus
-    const eventBus = new RealEventBus(logger);
-    
-    // Event Bus wildcard listener
-    const unsubscribeEventBus = eventBus.subscribe('*', (event) => {
-      setLogs((prev) => [...prev, `[EVENT_BUS] -> Intercepted Event [${event.type}] from [${event.source}]`]);
-    });
 
     logger.info('Bootstrap', 'Asynchronous decentralized Event Bus initialized and subscribed.');
     setSimStepIndex(2);
@@ -186,6 +192,7 @@ export default function InteractiveSim() {
         ctx.logger.info(this.name, 'Initializing identity verification structures...');
         await new Promise(r => setTimeout(r, 500));
         ctx.logger.info(this.name, 'Local sovereign identity cryptographically loaded.');
+        ctx.eventBus.publish('identity:ready', this.name, { nodeId: 'node_aether_alpha_01' });
       }
       public async shutdown(): Promise<void> {}
     }
@@ -196,6 +203,7 @@ export default function InteractiveSim() {
         ctx.logger.info(this.name, 'Initializing secure local filesystem layers...');
         await new Promise(r => setTimeout(r, 500));
         ctx.logger.info(this.name, 'Virtual file allocation tables mapped successfully.');
+        ctx.eventBus.publish('storage:ready', this.name, { status: 'mounted', writable: true });
       }
       public async shutdown(): Promise<void> {}
     }
@@ -206,6 +214,7 @@ export default function InteractiveSim() {
         ctx.logger.info(this.name, 'Connecting to hardware TPM security chip...');
         await new Promise(r => setTimeout(r, 500));
         ctx.logger.info(this.name, 'Symmetric and asymmetric cryptographic enclaves isolated.');
+        ctx.eventBus.publish('security:ready', this.name, { mode: 'hardware_secure' });
       }
       public async shutdown(): Promise<void> {}
     }

@@ -33,6 +33,18 @@ export class CoreEngine {
     this.logger.info('CoreEngine', 'Core engine booting sequence started...');
 
     try {
+      // Create promises that resolve when respective module-ready events are received on the Event Bus
+      const readyEvents = ['identity:ready', 'storage:ready', 'security:ready'];
+      const readyPromises = readyEvents.map(eventType => {
+        return new Promise<void>((resolve) => {
+          const unsubscribe = this.eventBus.subscribe(eventType, (event) => {
+            this.logger.info('CoreEngine', `[Event Intercepted] Captured ${eventType} from ${event.source}`);
+            unsubscribe();
+            resolve();
+          });
+        });
+      });
+
       // Announce boot
       this.eventBus.publish('system:boot_started', 'CoreEngine', {
         systemName: this.config.get('systemName'),
@@ -40,7 +52,10 @@ export class CoreEngine {
       });
 
       // Loading Modules via the ModuleLoader
-      await this.loader.loadAll();
+      const loadAllPromise = this.loader.loadAll();
+
+      // Wait for both loadAll to complete and all required module-ready events to be published on the Event Bus
+      await Promise.all([loadAllPromise, ...readyPromises]);
 
       this.state = 'RUNNING';
       this.logger.info('CoreEngine', 'Aether Core engine is now RUNNING.');

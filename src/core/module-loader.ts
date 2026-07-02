@@ -26,6 +26,7 @@ export class ModuleLoader {
     }
     this.modules.set(module.name, module);
     this.context.logger.info('ModuleLoader', `Registered module [${module.name}]`);
+    this.context.eventBus.publish('system:module_registered', 'ModuleLoader', { moduleName: module.name });
   }
 
   public async loadAll(): Promise<void> {
@@ -33,6 +34,7 @@ export class ModuleLoader {
     for (const [name, module] of this.modules) {
       try {
         this.context.logger.info('ModuleLoader', `Initializing module [${name}]...`);
+        this.context.eventBus.publish('system:module_loading', 'ModuleLoader', { moduleName: name });
         await module.init(this.context);
         this.context.logger.info('ModuleLoader', `Module [${name}] initialized successfully.`);
         this.context.eventBus.publish('system:module_loaded', 'ModuleLoader', { moduleName: name });

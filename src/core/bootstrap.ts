@@ -63,18 +63,25 @@ export async function runBootstrap(): Promise<CoreEngine> {
   
   // 2. Start logger
   const logger = new Logger(config.get('logLevel'));
-  logger.info('Bootstrap', '------------------------------------------------------------');
-  logger.info('Bootstrap', '🌟 INITIATING AETHER CORE BOOTSTRAP PROTOCOL (SPRINT 1) 🌟');
-  logger.info('Bootstrap', '------------------------------------------------------------');
-  logger.info('Bootstrap', `System: ${config.get('systemName')} | Version: ${config.get('version')} | Env: ${config.get('environment')}`);
 
   // 3. Start event bus
   const eventBus = new EventBus(logger);
+
+  // Set up logger to listen directly to system-wide lifecycle events via the Event Bus
+  logger.subscribeToEvents(eventBus);
 
   // Set up dynamic global event listener to output to console for auditing
   eventBus.subscribe('*', (event) => {
     logger.debug('AuditTrail', `[EVENT: ${event.type}] from [${event.source}]`);
   });
+
+  // Now configuration is loaded and event bus is ready, publish config:loaded
+  config.publishLoaded(eventBus);
+
+  logger.info('Bootstrap', '------------------------------------------------------------');
+  logger.info('Bootstrap', '🌟 INITIATING AETHER CORE BOOTSTRAP PROTOCOL (SPRINT 1) 🌟');
+  logger.info('Bootstrap', '------------------------------------------------------------');
+  logger.info('Bootstrap', `System: ${config.get('systemName')} | Version: ${config.get('version')} | Env: ${config.get('environment')}`);
 
   // 4. Create context & Load modules via ModuleLoader
   const context: ModuleContext = { logger, eventBus };

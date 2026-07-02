@@ -35,6 +35,32 @@ export class Logger {
     };
   }
 
+  public subscribeToEvents(eventBus: { subscribe: (type: string, handler: (event: any) => void) => () => void }): void {
+    eventBus.subscribe('system:boot_started', (event) => {
+      this.info('Logger', `[Observed Event: system:boot_started] System ${event.payload.systemName} v${event.payload.version} is starting boot.`);
+    });
+
+    eventBus.subscribe('system:boot_complete', (event) => {
+      this.info('Logger', `[Observed Event: system:boot_complete] Boot sequence complete. Status: ${event.payload.status}`);
+    });
+
+    eventBus.subscribe('system:shutdown_started', () => {
+      this.info('Logger', `[Observed Event: system:shutdown_started] Shutdown sequence initiated.`);
+    });
+
+    eventBus.subscribe('system:module_registered', (event) => {
+      this.debug('Logger', `[Observed Event: system:module_registered] Module registered: ${event.payload.moduleName}`);
+    });
+
+    eventBus.subscribe('system:module_loaded', (event) => {
+      this.info('Logger', `[Observed Event: system:module_loaded] Module fully initialized: ${event.payload.moduleName}`);
+    });
+
+    eventBus.subscribe('config:loaded', (event) => {
+      this.info('Logger', `[Observed Event: config:loaded] System Configuration loaded into runtime. SystemName: ${event.payload.systemName}`);
+    });
+  }
+
   private log(level: LogLevel, source: string, message: string): void {
     if (this.levelWeights[level] < this.levelWeights[this.minLevel]) {
       return;

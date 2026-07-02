@@ -30,6 +30,10 @@ export class ConfigurationManager {
     return { ...this.config };
   }
 
+  public publishLoaded(eventBus: { publish: (type: string, source: string, payload: any) => void }): void {
+    eventBus.publish('config:loaded', 'ConfigurationManager', { ...this.config });
+  }
+
   public set<K extends keyof SystemConfig>(key: K, value: SystemConfig[K]): void {
     this.config[key] = value;
   }
