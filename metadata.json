@@ -1,0 +1,6 @@
+{
+  "name": "Aether Systems Design Portal",
+  "description": "An interactive, high-fidelity system architecture explorer and specification manual for Aether: the next-generation private AI Operating System.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
