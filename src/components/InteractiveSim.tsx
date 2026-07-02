@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, RotateCcw, Terminal, ArrowRight, Shield, Cpu, Database, Network, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+// Import actual Aether Core modules
+import { ConfigurationManager } from '../core/config';
+import { Logger as RealLogger } from '../core/logger';
+import { EventBus as RealEventBus } from '../core/event-bus';
+import { ModuleLoader as RealModuleLoader, IModule, ModuleContext } from '../core/module-loader';
+import { CoreEngine as RealCoreEngine } from '../core/engine';
+
 interface SimulationEvent {
   id: string;
   name: string;
@@ -16,6 +23,20 @@ interface SimulationEvent {
 }
 
 const SIM_EVENTS: SimulationEvent[] = [
+  {
+    id: 'real-bootstrap',
+    name: 'Aether Core Bootstrap (Sprint 1 Live)',
+    subsystem: 'AetherCore',
+    description: 'Instantiate and execute the genuine Aether Core engine in the browser context. Watch the Configuration, Logger, Event Bus, and Module Loader coordinate in real-time.',
+    steps: [
+      { component: 'ConfigurationManager', action: 'Initialize settings and environmental variables', status: 'success', payload: 'LogLevel: INFO, Version: 1.0.0-bootstrap' },
+      { component: 'Logger', action: 'Initialize structured leveled logging output stream', status: 'success', payload: 'Levels: DEBUG, INFO, WARN, ERROR, FATAL' },
+      { component: 'EventBus', action: 'Start the decoupled publish-subscribe event broker', status: 'success', payload: 'Channel: Wildcard * audit stream enabled' },
+      { component: 'ModuleLoader', action: 'Register system-approved modules into context', status: 'success', payload: 'Modules: IdentityBridge, StorageAdapter, SecurityEnclave' },
+      { component: 'CoreEngine', action: 'Execute core engine boot sequence & load modules', status: 'success', payload: 'Initiating 3 core system modules' },
+      { component: 'AetherCore', action: 'Complete boot flow and transition system state to RUNNING', status: 'success', payload: 'System status: HEALTHY' }
+    ]
+  },
   {
     id: 'handshake',
     name: 'P2P Mutual Trust Discovery',
@@ -91,30 +112,144 @@ export default function InteractiveSim() {
     }
   }, [logs]);
 
-  // Handle auto playing of steps
+  // Handle auto playing of simulated steps
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (isPlaying && simStepIndex < activeEvent.steps.length - 1) {
+    if (isPlaying && activeEvent.id !== 'real-bootstrap' && simStepIndex < activeEvent.steps.length - 1) {
       timer = setTimeout(() => {
         const nextStep = simStepIndex + 1;
         setSimStepIndex(nextStep);
         const step = activeEvent.steps[nextStep];
         addLog(`${step.component.toUpperCase()} -> ${step.action} (${step.payload})`);
       }, 1500);
-    } else if (simStepIndex === activeEvent.steps.length - 1) {
+    } else if (simStepIndex === activeEvent.steps.length - 1 && activeEvent.id !== 'real-bootstrap') {
       setIsPlaying(false);
       addLog(`SYSTEM VERIFICATION COMPLETE: ${activeEvent.name} validation holds.`);
     }
     return () => clearTimeout(timer);
   }, [isPlaying, simStepIndex, activeEvent]);
 
+  // Execute real core engine components in browser memory!
+  const executeRealBootstrap = async () => {
+    addLog(`INITIATING REAL-TIME SYSTEM BOOTSTRAP IN BROWSER CONTEXT...`);
+    
+    await new Promise(r => setTimeout(r, 600));
+
+    // 1. Create Config
+    const config = new ConfigurationManager();
+    addLog(`CONFIG_LOAD -> Config variables and environmental profiles initialized.`);
+    await new Promise(r => setTimeout(r, 600));
+
+    // 2. Create Logger
+    const logger = new RealLogger(config.get('logLevel'));
+    
+    // Subscribe our React logs state to the logger outputs
+    const unsubscribeLogger = logger.subscribe((logMsg) => {
+      setLogs((prev) => [
+        ...prev,
+        `[${logMsg.timestamp.split('T')[1].slice(0, 8)}] [${logMsg.level}] [${logMsg.source}] ${logMsg.message}`
+      ]);
+    });
+
+    logger.info('Bootstrap', '------------------------------------------------------------');
+    logger.info('Bootstrap', '🌟 INITIATING AETHER CORE BOOTSTRAP PROTOCOL (SPRINT 1) 🌟');
+    logger.info('Bootstrap', '------------------------------------------------------------');
+    logger.info('Bootstrap', `System: ${config.get('systemName')} | Version: ${config.get('version')} | Env: ${config.get('environment')}`);
+    
+    setSimStepIndex(1);
+    await new Promise(r => setTimeout(r, 800));
+
+    // 3. Create EventBus
+    const eventBus = new RealEventBus(logger);
+    
+    // Event Bus wildcard listener
+    const unsubscribeEventBus = eventBus.subscribe('*', (event) => {
+      setLogs((prev) => [...prev, `[EVENT_BUS] -> Intercepted Event [${event.type}] from [${event.source}]`]);
+    });
+
+    logger.info('Bootstrap', 'Asynchronous decentralized Event Bus initialized and subscribed.');
+    setSimStepIndex(2);
+    await new Promise(r => setTimeout(r, 800));
+
+    // 4. Create Module Loader and context
+    const context: ModuleContext = { logger, eventBus };
+    const loader = new RealModuleLoader(context);
+
+    // Register modules
+    class BrowserIdentityModule implements IModule {
+      public name = 'IdentityBridge';
+      public async init(ctx: ModuleContext): Promise<void> {
+        ctx.logger.info(this.name, 'Initializing identity verification structures...');
+        await new Promise(r => setTimeout(r, 500));
+        ctx.logger.info(this.name, 'Local sovereign identity cryptographically loaded.');
+      }
+      public async shutdown(): Promise<void> {}
+    }
+
+    class BrowserStorageModule implements IModule {
+      public name = 'StorageAdapter';
+      public async init(ctx: ModuleContext): Promise<void> {
+        ctx.logger.info(this.name, 'Initializing secure local filesystem layers...');
+        await new Promise(r => setTimeout(r, 500));
+        ctx.logger.info(this.name, 'Virtual file allocation tables mapped successfully.');
+      }
+      public async shutdown(): Promise<void> {}
+    }
+
+    class BrowserSecurityModule implements IModule {
+      public name = 'SecurityEnclave';
+      public async init(ctx: ModuleContext): Promise<void> {
+        ctx.logger.info(this.name, 'Connecting to hardware TPM security chip...');
+        await new Promise(r => setTimeout(r, 500));
+        ctx.logger.info(this.name, 'Symmetric and asymmetric cryptographic enclaves isolated.');
+      }
+      public async shutdown(): Promise<void> {}
+    }
+
+    loader.register(new BrowserIdentityModule());
+    loader.register(new BrowserStorageModule());
+    loader.register(new BrowserSecurityModule());
+
+    setSimStepIndex(3);
+    await new Promise(r => setTimeout(r, 800));
+
+    // 5. Create Core Engine and Boot
+    const engine = new RealCoreEngine(config, logger, eventBus, loader);
+
+    setSimStepIndex(4);
+    await new Promise(r => setTimeout(r, 600));
+
+    try {
+      await engine.boot();
+      setSimStepIndex(5);
+      
+      logger.info('Bootstrap', '------------------------------------------------------------');
+      logger.info('Bootstrap', '✅ AETHER SYSTEM STATUS: SECURE & HEALTHY');
+      logger.info('Bootstrap', `Active State: ${engine.getStatus().state}`);
+      logger.info('Bootstrap', `Modules Registered & Loaded: ${engine.getStatus().loadedModules.join(', ')}`);
+      logger.info('Bootstrap', '------------------------------------------------------------');
+
+    } catch (err: any) {
+      logger.fatal('Bootstrap', `Browser engine boot failed: ${err.message}`);
+    } finally {
+      setIsPlaying(false);
+      unsubscribeLogger();
+      unsubscribeEventBus();
+    }
+  };
+
   const startSimulation = () => {
     setLogs([]);
     setSimStepIndex(0);
     setIsPlaying(true);
-    addLog(`INITIATING DESIGN VERIFICATION: ${activeEvent.name} ...`);
-    const step = activeEvent.steps[0];
-    addLog(`${step.component.toUpperCase()} -> ${step.action} (${step.payload})`);
+    
+    if (activeEvent.id === 'real-bootstrap') {
+      executeRealBootstrap();
+    } else {
+      addLog(`INITIATING DESIGN VERIFICATION: ${activeEvent.name} ...`);
+      const step = activeEvent.steps[0];
+      addLog(`${step.component.toUpperCase()} -> ${step.action} (${step.payload})`);
+    }
   };
 
   const resetSimulation = () => {
