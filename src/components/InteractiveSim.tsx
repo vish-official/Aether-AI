@@ -2,12 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, RotateCcw, Terminal, ArrowRight, Shield, Cpu, Database, Network, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-// Import actual Aether Core modules
-import { ConfigurationManager } from '../core/config';
-import { Logger as RealLogger } from '../core/logger';
-import { EventBus as RealEventBus } from '../core/event-bus';
-import { ModuleLoader as RealModuleLoader, IModule, ModuleContext } from '../core/module-loader';
-import { CoreEngine as RealCoreEngine } from '../core/engine';
+// Import actual Aether Core modules from public entry point
+import {
+  ConfigurationManager,
+  Logger as RealLogger,
+  EventBus as RealEventBus,
+  ModuleLoader as RealModuleLoader,
+  IModule,
+  ModuleContext,
+  CoreEngine as RealCoreEngine
+} from '../core';
 
 interface SimulationEvent {
   id: string;
