@@ -112,6 +112,22 @@ const SIM_EVENTS: SimulationEvent[] = [
       { component: 'ToolRunner', action: 'Fire tool.completed lifecycle event with ToolResult object', status: 'success', payload: 'tool.completed: { success: true, durationMs: 4, timestamp: "2026-07-03..." }' },
       { component: 'FileReadTool', action: 'Invoke cleanup() to release system resources', status: 'success', payload: 'File stream closed and temporary buffers cleared' }
     ]
+  },
+  {
+    id: 'tool-permission-layer',
+    name: 'Permission Layer & Fail-Secure Policy (Sprint 5.5)',
+    subsystem: 'AetherSecurity',
+    description: 'Witness the newly integrated PermissionManager and ToolRunner enforce fail-secure capability checks, dynamically revoking terminal & launching rights to block exploit requests.',
+    steps: [
+      { component: 'PermissionManager', action: 'Register system-approved permissions and default grants', status: 'success', payload: 'system.launch_application, filesystem.read, filesystem.write, terminal.execute' },
+      { component: 'ToolRunner', action: 'Request tool execution of "open-application"', status: 'info', payload: 'Tool: open-application; Args: { appName: "calc" }' },
+      { component: 'PermissionManager', action: 'Evaluate required permission: system.launch_application', status: 'success', payload: 'Required: [system.launch_application] -> Decision: GRANTED' },
+      { component: 'ToolRunner', action: 'Proceed with application execution', status: 'success', payload: 'App started: "calc" | ToolResult: success' },
+      { component: 'PermissionManager', action: 'Revoke "system.launch_application" capability dynamic policy', status: 'warning', payload: 'Revoked: system.launch_application' },
+      { component: 'ToolRunner', action: 'Re-request tool execution of "open-application"', status: 'info', payload: 'Tool: open-application; Args: { appName: "calc" }' },
+      { component: 'PermissionManager', action: 'Evaluate required permission after policy change', status: 'warning', payload: 'Decision: DENIED (Reason: Denied: [system.launch_application])' },
+      { component: 'ToolRunner', action: 'Halt execution, fire permission.denied & tool.failed lifecycle events', status: 'warning', payload: 'ToolResult error code: PERMISSION_DENIED' }
+    ]
   }
 ];
 

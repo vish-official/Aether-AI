@@ -20,6 +20,7 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
     description: 'Launches a desktop application by name on the host operating system (Windows, Linux, or macOS).',
     category: 'system',
     version: '1.0.0',
+    requiredPermissions: ['system.launch_application'],
     supportedPlatforms: ['desktop', 'any']
   };
 

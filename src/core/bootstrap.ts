@@ -3,6 +3,10 @@ import { Logger } from './logger';
 import { EventBus } from './event-bus';
 import { ModuleLoader, IModule, ModuleContext, ModuleStatus } from './module-loader';
 import { CoreEngine } from './engine';
+import { ToolManager } from './tool-manager';
+import { PermissionManager } from './permission-manager';
+import { ToolRunner } from './tool-runner';
+import { OpenApplicationTool } from './open-application-tool';
 
 // --- Simple, compliant, non-blocking core modules ---
 
@@ -196,7 +200,39 @@ const isMain = typeof process !== 'undefined' && process.argv &&
   (process.argv[1]?.endsWith('bootstrap.ts') || process.argv[1]?.endsWith('bootstrap.js') || process.argv[1]?.endsWith('cli.ts') || process.argv[1]?.endsWith('cli.js'));
 
 if (isMain) {
-  runBootstrap().catch((err) => {
+  runBootstrap().then(async (engine) => {
+    // 1. Create a contextual demonstration of the SPRINT 5.5 Tool and Permission System
+    const context: ModuleContext = { logger: engine['logger'], eventBus: engine['eventBus'] };
+    
+    const toolManager = new ToolManager(context.eventBus, context.logger);
+    const permissionManager = new PermissionManager(context.eventBus, context.logger);
+    const toolRunner = new ToolRunner(toolManager, permissionManager, context.eventBus, context.logger, context);
+
+    // 2. Register the OpenApplicationTool
+    const appTool = new OpenApplicationTool();
+    toolManager.register(appTool);
+
+    context.logger.info('BootstrapTest', '=== TOOL SYSTEM & PERMISSION DEMO (SPRINT 5.5) ===');
+
+    // Scenario A: Execute with permission granted (Default state of system.launch_application is GRANTED)
+    context.logger.info('BootstrapTest', 'Scenario A: Executing OpenApplicationTool with default granted permissions.');
+    const resultA = await toolRunner.execute('open-application', 'calc');
+    context.logger.info('BootstrapTest', `Scenario A Result Success: ${resultA.success} | Code: ${resultA.error?.code ?? 'NONE'}`);
+
+    // Scenario B: Revoke permission and attempt execution
+    context.logger.info('BootstrapTest', 'Scenario B: Revoking system.launch_application permission and re-executing.');
+    permissionManager.revoke('system.launch_application');
+    const resultB = await toolRunner.execute('open-application', 'calc');
+    context.logger.info('BootstrapTest', `Scenario B Result Success: ${resultB.success} | Code: ${resultB.error?.code ?? 'NONE'} | Reason: ${resultB.error?.message}`);
+
+    // Scenario C: Re-grant permission and execute again
+    context.logger.info('BootstrapTest', 'Scenario C: Re-granting permission and re-executing.');
+    permissionManager.grant('system.launch_application');
+    const resultC = await toolRunner.execute('open-application', 'calc');
+    context.logger.info('BootstrapTest', `Scenario C Result Success: ${resultC.success} | Code: ${resultC.error?.code ?? 'NONE'}`);
+
+    context.logger.info('BootstrapTest', '=== DEMO COMPLETE ===');
+  }).catch((err) => {
     console.error('Fatal Bootstrap Failure:', err);
     process.exit(1);
   });

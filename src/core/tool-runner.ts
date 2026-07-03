@@ -3,6 +3,7 @@ import { EventBus } from './event-bus';
 import { Logger } from './logger';
 import { ITool, ToolResult } from './tool';
 import { ModuleContext } from './module-loader';
+import { PermissionManager } from './permission-manager';
 
 /**
  * ToolRunner is responsible for orchestrating the execution lifecycle of registered tools.
@@ -11,16 +12,25 @@ import { ModuleContext } from './module-loader';
  */
 export class ToolRunner {
   private toolManager: ToolManager;
+  private permissionManager: PermissionManager;
   private eventBus: EventBus;
   private logger: Logger;
   private context: ModuleContext;
 
-  constructor(toolManager: ToolManager, eventBus: EventBus, logger: Logger, context?: ModuleContext) {
+  constructor(
+    toolManager: ToolManager,
+    permissionManager: PermissionManager,
+    eventBus: EventBus,
+    logger: Logger,
+    context?: ModuleContext
+  ) {
     if (!toolManager) throw new Error('ToolRunner Error: ToolManager is required.');
+    if (!permissionManager) throw new Error('ToolRunner Error: PermissionManager is required.');
     if (!eventBus) throw new Error('ToolRunner Error: EventBus is required.');
     if (!logger) throw new Error('ToolRunner Error: Logger is required.');
 
     this.toolManager = toolManager;
+    this.permissionManager = permissionManager;
     this.eventBus = eventBus;
     this.logger = logger;
     this.context = context || { eventBus, logger };
@@ -106,6 +116,39 @@ export class ToolRunner {
         durationMs: 0,
         timestamp: new Date().toISOString()
       };
+
+      this.eventBus.publish('tool.failed', 'ToolRunner', {
+        toolId,
+        error: errorMsg,
+        timestamp: result.timestamp
+      });
+
+      return result;
+    }
+
+    // 2.5. Evaluate execution permissions via PermissionManager
+    const requiredPermissions = tool.metadata.requiredPermissions;
+    const permissionDecision = this.permissionManager.evaluateRequest(toolId, requiredPermissions);
+
+    if (!permissionDecision.allowed) {
+      const errorMsg = permissionDecision.reason;
+      this.logger.warn('ToolRunner', `Execution blocked: ${errorMsg}`);
+
+      const result: ToolResult = {
+        success: false,
+        error: {
+          code: 'PERMISSION_DENIED',
+          message: errorMsg
+        },
+        durationMs: 0,
+        timestamp: new Date().toISOString()
+      };
+
+      this.eventBus.publish('permission.denied', 'ToolRunner', {
+        toolId,
+        reason: errorMsg,
+        timestamp: result.timestamp
+      });
 
       this.eventBus.publish('tool.failed', 'ToolRunner', {
         toolId,
