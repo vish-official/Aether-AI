@@ -171,8 +171,9 @@ export default function InteractiveSim() {
     config.publishLoaded(eventBus);
 
     logger.info('Bootstrap', '------------------------------------------------------------');
-    logger.info('Bootstrap', '🌟 INITIATING AETHER CORE BOOTSTRAP PROTOCOL (SPRINT 1) 🌟');
+    logger.info('Bootstrap', '🌟 INITIATING AETHER CORE BOOTSTRAP PROTOCOL (SPRINT 4) 🌟');
     logger.info('Bootstrap', '------------------------------------------------------------');
+    logger.info('Bootstrap', 'Validated configuration groups loaded from aether.config.json');
     logger.info('Bootstrap', `System: ${config.get('systemName')} | Version: ${config.get('version')} | Env: ${config.get('environment')}`);
     
     setSimStepIndex(1);
