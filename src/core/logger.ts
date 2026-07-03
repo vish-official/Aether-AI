@@ -82,6 +82,18 @@ export class Logger {
       this.info('Logger', `[Observed Event: tool.registered] Tool registered: ${event.payload.metadata?.name} (id: ${event.payload.toolId})`);
     });
 
+    eventBus.subscribe('tool.unregistered', (event) => {
+      this.info('Logger', `[Observed Event: tool.unregistered] Tool unregistered: ${event.payload.metadata?.name} (id: ${event.payload.toolId})`);
+    });
+
+    eventBus.subscribe('tool.enabled', (event) => {
+      this.info('Logger', `[Observed Event: tool.enabled] Tool enabled: ${event.payload.metadata?.name} (id: ${event.payload.toolId})`);
+    });
+
+    eventBus.subscribe('tool.disabled', (event) => {
+      this.info('Logger', `[Observed Event: tool.disabled] Tool disabled: ${event.payload.metadata?.name} (id: ${event.payload.toolId})`);
+    });
+
     eventBus.subscribe('tool.executing', (event) => {
       this.info('Logger', `[Observed Event: tool.executing] Tool execution started: ${event.payload.toolId}`);
     });

@@ -5,6 +5,7 @@ export { EventBus } from './event-bus';
 export { ModuleLoader } from './module-loader';
 export { CoreEngine } from './engine';
 export { runBootstrap } from './bootstrap';
+export { ToolManager } from './tool-manager';
 
 // Types & Interfaces
 export type { SystemConfig } from './config';

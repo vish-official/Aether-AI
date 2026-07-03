@@ -7,7 +7,9 @@ export const GLOSSARY: GlossaryItem[] = [
   { term: "Sovereign DID", definition: "Decentralized Identifiers built on public-key cryptography to represent Aether identities without relying on third-party identity providers.", subsystem: "AetherIdentity" },
   { term: "Capability Token", definition: "Cryptographically signed authorizations granted to tools and agents that define precise, sandboxed resource access limits.", subsystem: "AetherGuard" },
   { term: "Intelligence Router", definition: "The modular orchestrator that determines whether a cognitive request can be handled locally by a small language model (SLM) or requires an external secure LLM.", subsystem: "AetherMind" },
-  { term: "Platform Runtime Bridge", definition: "The secure abstraction layer mapping standardized OS system calls (I/O, process spawn, socket open) to native host platforms.", subsystem: "AetherRuntime" }
+  { term: "Platform Runtime Bridge", definition: "The secure abstraction layer mapping standardized OS system calls (I/O, process spawn, socket open) to native host platforms.", subsystem: "AetherRuntime" },
+  { term: "Tool Interface", definition: "The unified strongly-typed contract (ITool) specifying standard initialization, argument validation, and lifecycle execution hooks for all Aether tools.", subsystem: "AetherToolSystem" },
+  { term: "Tool Manager", definition: "The central registration and lifecycle management authority in Aether that registers, unregisters, enables, disables, and checks tool existence.", subsystem: "AetherToolSystem" }
 ];
 
 export const SPEC_DOCUMENTS: SpecDocument[] = [
