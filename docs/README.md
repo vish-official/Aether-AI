@@ -45,12 +45,13 @@ Any modification to Aether's codebase must align with and trace back to the prin
   * Technology-independent architectural definitions for long-term memory.
 
 ### [02_Memory_Object.md - The Universal Memory Object](02_Memory_Object.md)
-* **Status:** 🟡 DRAFT / PROPOSED (v0.1)  
+* **Status:** 🟡 DRAFT / PROPOSED (v0.2)  
 * **Abstract:** Defines the universal conceptual structure of every memory within Aether, serving as the foundational, atomic unit of retention.
 * **Key Content:**
-  * Universal schema fields (Memory ID, Domain, Content, Context, Source, Evidence Log, Confidence, Status, Timestamps, Tags, and Metadata).
-  * Five primary conceptual memory states (Candidate, Verified, Archived, Rejected, Forgotten).
-  * Behavioral guarantees for memory uniqueness, trace lineage, and domain extensibility.
+* Universal schema fields (Memory ID, Domain, Content, Context, Source, Evidence, Confidence, Status, Timestamps, Tags, and Metadata).
+* Conceptual memory states (Active, Pending, Archived, Invalidated) focused on object definition boundaries.
+* Direct relational properties supporting typed memory connections (Derived From, Related To, Part Of, Supports, Conflicts With).
+* Future-proof compatibility guarantees and metadata extensibility limits.
 
 ---
 

@@ -1,6 +1,6 @@
 # Aether Memory Specification: The Universal Memory Object
 
-* **Status:** 🟡 DRAFT (v0.1)  
+* **Status:** 🟡 DRAFT (v0.2)  
 * **Subject:** The Universal Memory Object Conceptual Schema  
 * **Parent Specification:** [04_Memory_Principles.md](04_Memory_Principles.md)  
 
@@ -9,232 +9,208 @@
 ## 1. Architectural Definition
 
 ### What is a Memory Object?
-A **Memory Object** is the foundational, atomic, and self-contained unit of semantic retention within Aether. It is a technology-independent data envelope that binds together retrieved experience, contextual metadata, confidence measures, and audit records into a single, uniform package. 
+A **Memory Object** is the fundamental, independent unit of data retention within Aether. It serves as a technology-independent container that binds together retained information, context, origin, evidence, confidence, and relationships.
 
-Every facet of Aether's long-term and short-term recollection—regardless of whether it represents an explicit user preference, an inferred workflow pattern, an active project constraint, or a self-reflective system state—must inherit this conceptual structure.
+Every type of memory within Aether—including user profiles, specific preferences, project specifications, ongoing conversational context, logical reflections, domain knowledge, and system parameters—must conform to this universal structure.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        UNIVERSAL MEMORY OBJECT                         │
 ├────────────────────────────────────────────────────────────────────────┤
 │  [Identity Boundary]                                                   │
-│   ├── UUID (Permanent, globally unique identifier)                     │
-│   └── Semantic Type / Domain (Boundary grouping)                       │
+│   ├── Memory ID (Permanent, unique, immutable, traceable)              │
+│   └── Memory Domain (Primary functional classification)                │
 ├────────────────────────────────────────────────────────────────────────┤
-│  [Payload Envelope]                                                    │
-│   ├── Core Content (Sovereign semantic payload)                        │
-│   └── Extensible Metadata (Domain-specific schema space)                │
+│  [Core Payload]                                                        │
+│   └── Content (The semantic payload)                                   │
 ├────────────────────────────────────────────────────────────────────────┤
-│  [Audit & Lineage Trail]                                               │
-│   ├── Source & Origin (Verifiable genesis trace)                       │
-│   ├── Evidence Log (Trace of corroborating observations)               │
-│   └── Confidence Profile (Evidence-backed certainty state)             │
+│  [Traceability & Evidence]                                             │
+│   ├── Source (Originating entity or mechanism)                         │
+│   ├── Evidence (References to supporting events or data)               │
+│   └── Confidence (Quantified certainty based on evidence)              │
 ├────────────────────────────────────────────────────────────────────────┤
 │  [Context Envelope]                                                    │
-│   ├── Environmental Context (Spatial, temporal, relational)            │
-│   └── Taxonomy Tags (Decoupled semantic qualifiers)                    │
+│   └── Context (Temporal, environmental, and situational markers)       │
 ├────────────────────────────────────────────────────────────────────────┤
-│  [Lifecycle State]                                                     │
-│   ├── Operational Status (Candidate, Verified, Archived, etc.)         │
-│   └── Temporal Markers (Created, Updated, Expired timestamps)          │
+│  [Relational Matrix]                                                   │
+│   └── Relationships (Typed, directed connections to other memories)    │
+├────────────────────────────────────────────────────────────────────────┤
+│  [Lifecycle & Metadata]                                                │
+│   ├── Status (Operational lifecycle state)                             │
+│   ├── Created At / Updated At (Timestamps)                             │
+│   └── Metadata (Schema space reserved for domain extensions)           │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
----
+### Why Every Memory Shares One Structure
+Designing a single, universal structure for all memory types delivers significant architectural advantages:
 
-## 2. Engineering Rationale
-
-In Aether, memory is not a side-car database of simple text snippets; it is an active cognitive fabric. Forcing every memory to share a unified, immutable envelope yields substantial engineering benefits:
-
-* **Universal Parser & Indexer Stability:** Internal reasoning systems, planners, and background agents can parse, evaluate, and trace any memory object using a single, consistent protocol. The query engine does not need to adapt to different internal structures for different types of data.
-* **Traceability and Accountability Guarantee:** By embedding origin, evidence, and confidence directly into the atomic model, Aether guarantees that no memory can exist as an "orphan" with unknown origins. Every piece of retained data is auditable.
-* **Seamless Cognitive Synthesis:** When background agents perform high-level processing (e.g., merging short-term observations into long-term user model preferences), they can read input memories and write output memories using the exact same contract, facilitating clean data lineages.
-* **Storage and Driver Decoupling:** Subsystems responsible for syncing memory across user devices or swapping memory between local fast-cache layers and long-term storage do not need to understand what is *inside* a memory to manage its lifecycle.
+1. **Unified Processing Contracts:** Downstream systems—such as reasoning engines, planners, and task execution modules—can consume and evaluate any memory using a single contract. Subsystems do not need custom parsers for different categories of memory.
+2. **Standardized Lineage and Audits:** By requiring core traceability fields (ID, Source, Evidence, and Timestamps) at the base level, the system ensures that every memory remains fully auditable. The platform can programmatically construct the origin and evolutionary path of any record.
+3. **Decoupled Storage layer:** The storage layer can index, partition, sync, and cache memories without inspecting or understanding domain-specific properties.
+4. **Composition and Evolution:** Advanced modules can combine, merge, or split memories of different domains because they share a common transactional interface.
 
 ---
 
-## 3. Universal Fields Specification
+## 2. Universal Fields Specification
 
-The following schema defines the conceptual fields that every Memory Object must contain. This design is strictly technology-independent and avoids programming language syntax, focusing entirely on semantic and logical requirements.
+The following fields define the core conceptual structure of every Memory Object. This specification is abstract, ensuring compatibility with any underlying persistence or transmission technology.
 
-### 3.1. Primary Envelope Fields
+### 2.1. Identifier and Classification
 
-#### Field 1: Memory Identifier
+#### Field 1: Memory ID
 * **Name:** `Memory ID`
-* **Purpose:** Uniquely and permanently identifies this specific memory across all space, time, and synchronized user devices.
-* **Why it exists:** Crucial for referencing memory objects in transaction logs, planning graphs, and dependency networks without ambiguity.
+* **Purpose:** Uniquely identifies this specific Memory Object.
+* **Reason:** Ensures references, updates, and relationship mappings pointing to this memory remain stable and correct.
 * **Required:** Yes
-* **Notes:** Once generated, this identifier must be structurally immutable. It must never change, even if the content of the memory is updated.
+* **Notes:** Must be permanent, globally unique, immutable, and traceable. The format of the identifier is unspecified, but it must be resolvable across distributed local environments.
 
 #### Field 2: Memory Domain
 * **Name:** `Memory Domain`
-* **Purpose:** Classifies the memory under a primary behavioral and semantic category.
-* **Why it exists:** Allows high-speed routing, partitioning, and retrieval scoping without having to inspect the payload.
+* **Purpose:** Classifies the memory within a primary behavioral or functional category.
+* **Reason:** Allows retrieval engines to scope queries and apply domain-specific security or operational rules.
 * **Required:** Yes
-* **Notes:** Allowed domains are constrained to those defined in the architectural boundaries: *Identity, Preferences, Projects, Working Memory, Reflections, Knowledge, User Model, Self Model*.
-
-#### Field 3: Core Content
-* **Name:** `Content`
-* **Purpose:** The actual body of knowledge or experience being retained.
-* **Why it exists:** Represents the primary payload of information the user or system needs to recall.
-* **Required:** Yes
-* **Notes:** Can contain raw strings, key-value structures, or complex lists, but must remain representation-agnostic at this layer.
+* **Notes:** Constrained to known domains including *Identity, Preferences, Projects, Working Memory, Reflections, Knowledge, User Model, and Self Model*.
 
 ---
 
-### 3.2. Context & Rationale Fields
+### 2.2. Content and Payload
 
-#### Field 4: Context Envelope
-* **Name:** `Context`
-* **Purpose:** Captures the situational coordinates when the memory was acquired or observed.
-* **Why it exists:** Prevents memories from being evaluated out-of-context, which leads to incorrect reasoning.
+#### Field 3: Content
+* **Name:** `Content`
+* **Purpose:** Holds the actual core data or experience being retained.
+* **Reason:** This is the primary payload needed for reasoning, execution, or presentation.
 * **Required:** Yes
-* **Notes:** Must conceptually capture:
-  * *Temporal context* (the specific human time or phase of interaction)
-  * *Relational context* (related active tasks, projects, or people present)
-  * *System context* (the state of the workspace or active application when remembered)
+* **Notes:** Content representation must be flexible enough to accommodate various structured data forms, but remains conceptually agnostic at this architectural layer.
+
+---
+
+### 2.3. Context, Origin, and Relationships
+
+#### Field 4: Context
+* **Name:** `Context`
+* **Purpose:** Captures the situational coordinates when the memory was acquired or created.
+* **Reason:** Prevents memories from being evaluated out-of-context, which leads to incorrect reasoning.
+* **Required:** Yes
+* **Notes:** Conceptually records temporal markers, active tasks, related users, and system environment details active during creation.
 
 #### Field 5: Source
 * **Name:** `Source`
-* **Purpose:** Explicitly documents the actor or system that initiated the creation of this memory.
-* **Why it exists:** Directly supports Principle 4 (Every Memory Has Evidence) and Principle 10 (Privacy by Default) by tracking exactly who or what introduced the data.
+* **Purpose:** Documents the actor or system mechanism that generated the memory.
+* **Reason:** Guarantees that the origin of any retained item can be determined during audits.
 * **Required:** Yes
-* **Notes:** Value must represent a clear category of origin (e.g., "User Statement", "System Inference", "External Import", "Workspace Event").
+* **Notes:** Must represent a clear category of origin (e.g., explicit user input, system observation, third-party synchronization).
 
-#### Field 6: Evidence Log
-* **Name:** `Evidence Log`
-* **Purpose:** A historical collection of corroborating observations, interaction logs, or specific document references that justify the existence of this memory.
-* **Why it exists:** Prevents Aether from hallucinating patterns or retaining uncorroborated assumptions.
-* **Required:** Yes (though it may be initialized as empty for explicit, self-evident user statements)
-* **Notes:** For inferred memories, this log must reference the specific, discrete events that triggered the inference.
+#### Field 6: Evidence
+* **Name:** `Evidence`
+* **Purpose:** Lists references to supporting records, events, or user interactions that corroborate this memory.
+* **Reason:** Fulfills the requirement that memory must have evidence. Prevents unverified assumptions from propagating unchecked.
+* **Required:** Yes (can be empty if the memory is an explicit, self-evident user statement)
+* **Notes:** For inferred memories, this field must contain links to the specific, discrete observations or interaction events that triggered the inference.
 
-#### Field 7: Confidence Profile
-* **Name:** `Confidence Profile`
-* **Purpose:** Quantifies Aether's operational certainty regarding the memory's truth or relevance.
-* **Why it exists:** Fulfills Principle 6 (Confidence is Separate from Truth). Allows planning and execution engines to weigh risks when acting on potentially outdated or inferred data.
-* **Required:** Yes
-* **Notes:** Must remain bound to the `Evidence Log`. If evidence is sparse or old, confidence decays over time.
+#### Field 7: Relationships
+* **Name:** `Relationships`
+* **Purpose:** Defines conceptual directed connections to other Memory Objects.
+* **Reason:** Allows memories to form logical associations, hierarchical structures, and dependency graphs.
+* **Required:** Yes (can be empty)
+* **Notes:** Must support typed relationships including *Derived From, Related To, Part Of, Supports, and Conflicts With*.
 
 ---
 
-### 3.3. Lifecycle & Metadata Fields
+### 2.4. Reliability and Lifecycle
 
-#### Field 8: Operational Status
+#### Field 8: Confidence
+* **Name:** `Confidence`
+* **Purpose:** Represents the degree of certainty regarding the accuracy or continuing relevance of the memory.
+* **Reason:** Allows execution systems to assess risks when acting on potentially outdated or inferred information.
+* **Required:** Yes
+* **Notes:** Confidence must always be supported by evidence and is never proof of absolute truth. Highly confident memories may still be wrong.
+
+#### Field 9: Status
 * **Name:** `Status`
-* **Purpose:** Represents the lifecycle state of the memory within the system.
-* **Why it exists:** Supports forgetting, archivation, and human vetting of automated system insights.
+* **Purpose:** Reflects the current operational state of the memory in the active system.
+* **Reason:** Controls whether the memory is active, pending review, archived, or marked for deletion.
 * **Required:** Yes
-* **Notes:** Strictly limited to the conceptual states defined in Section 5 of this document.
+* **Notes:** The basic statuses are limited to core operational states. Lifecycle policies and transition logic are managed separately.
 
-#### Field 9: Created At
+#### Field 10: Created At
 * **Name:** `Created At`
-* **Purpose:** Stores the exact timestamp when the Memory Object was first written to storage.
-* **Why it exists:** Used for age-based decay calculations, historical audits, and chronological timeline reconstruction.
+* **Purpose:** Records the timestamp when the Memory Object was first generated.
+* **Reason:** Crucial for chronology, historical auditing, and time-based query ordering.
 * **Required:** Yes
-* **Notes:** Immutable. Must represent the true standard cosmic time of genesis.
+* **Notes:** Immutable once written.
 
-#### Field 10: Updated At
+#### Field 11: Updated At
 * **Name:** `Updated At`
-* **Purpose:** Stores the exact timestamp when any field within the Memory Object was modified.
-* **Why it exists:** Vital for synchronization reconciliation between multi-terminal systems to resolve write conflicts.
+* **Purpose:** Records the timestamp when any property of the Memory Object was modified.
+* **Reason:** Essential for managing concurrent writes, data synchronization, and conflicts across systems.
 * **Required:** Yes
-* **Notes:** Must be updated atomically on every write operation affecting the object.
+* **Notes:** Must be updated atomically on every write operation.
 
-#### Field 11: Taxonomy Tags
+---
+
+### 2.5. Extensions
+
+#### Field 12: Tags
 * **Name:** `Tags`
-* **Purpose:** Flat, non-hierarchical, human-readable labels associated with the memory.
-* **Why it exists:** Facilitates broad, multi-domain discovery and cross-domain associations (e.g., tagging an identity memory and a project memory both with "personal-finance").
+* **Purpose:** Flat semantic qualifiers used for categorization.
+* **Reason:** Enables fast, cross-domain grouping and discovery.
 * **Required:** No (defaults to empty)
-* **Notes:** Conceptual labels used for light organizational purposes.
+* **Notes:** Abstract, non-hierarchical categorization labels.
 
-#### Field 12: Extensible Metadata
+#### Field 13: Metadata
 * **Name:** `Metadata`
-* **Purpose:** An escape hatch for domain-specific schemas that do not fit into the core universal fields.
-* **Why it exists:** Enables specialization (e.g., project memories might need milestones; preference memories might need override rules) without mutating the universal parent structure.
+* **Purpose:** Provides a dedicated space for domain-specific schemas.
+* **Reason:** Allows specialized memory domains to store custom properties without modifying the universal parent contract.
 * **Required:** No (defaults to empty)
-* **Notes:** Must never be used to bypass the core universal fields. Core properties like ID, Status, and Confidence must never be placed inside the Metadata envelope.
+* **Notes:** Must never be used to replace or override core universal fields. Standard fields like ID, Status, Source, and Confidence must reside in their respective fields, never within the Metadata object.
 
 ---
 
-## 4. Memory Identity
+## 3. Memory Status Model
 
-Identity is the constitutional anchor of memory. To ensure total client-side sovereignty and robust offline operation:
+To focus the Memory Object definition, we define only the conceptual statuses necessary to determine active query boundaries. Transition rules and lifecycle policies are decoupled from this specification:
 
-* **Globally Unique Uniqueness:** Every Memory ID must be mathematically unique across all possible local systems. Memory generation must not rely on a central server to assign IDs, allowing Aether to safely register memories during completely offline sessions.
-* **Traceable Lineage:** If a memory is modified, merged, or split, the new Memory Object(s) must preserve references to the `Memory ID` of the precursor objects inside their `Evidence Log`. This guarantees that the chain of custody and evolutionary path of any memory remains entirely traceable from its genesis.
-
----
-
-## 5. Conceptual Memory Statuses
-
-To manage the lifecycle of data, every Memory Object must occupy exactly one of the following states:
-
-```
-                  ┌───────────────┐
-                  │   Candidate   │ ◄─── (Uncorroborated pattern or draft)
-                  └───────┬───────┘
-                          │ (Corroborated / Confirmed)
-                          ▼
-                  ┌───────────────┐
-                  │   Verified    │ ◄─── (Explicit facts or solid patterns)
-                  └───────┬───────┘
-                          │
-         ┌────────────────┴────────────────┐
-         ▼ (Obsolete or superseded)       ▼ (Vetoed or disproven)
-  ┌───────────────┐                 ┌───────────────┐
-  │   Archived    │                 │   Rejected    │
-  └───────┬───────┘                 └───────────────┘
-          │ (Explicitly purged)
-          ▼
-  ┌───────────────┐
-  │   Forgotten   │ ◄─── (Tombstoned record awaiting garbage collection)
-  └───────────────┘
-```
-
-1. **Candidate:** The memory is a proposed draft. It may be an uncorroborated inference, an pattern observed only once, or a suggestion queued for user verification.
-2. **Verified:** The memory is accepted as reliable. This includes all explicit user statements (facts) and highly corroborated inferences. Aether can confidently base planning and reasoning on this object.
-3. **Archived:** The memory is no longer actively relevant to current tasks, but remains in long-term cold storage. It is excluded from default search windows but remains searchable if historical context is requested.
-4. **Rejected:** The memory has been explicitly vetoed or disproven by the user or strong counter-evidence. It serves as a negative constraint, preventing Aether from forming the same incorrect inference again.
-5. **Forgotten:** The memory is marked for deletion. It has expired, been explicitly purged, or lost all confidence through decay. It remains only as a structural tombstone to prevent synchronization conflicts, before being completely expunged.
+* **Active:** The memory is verified, relevant, and fully available for reasoning and execution.
+* **Pending:** The memory is a candidate state (e.g., an uncorroborated inference or a draft awaiting review). It has restricted usage boundaries.
+* **Archived:** The memory is retained for history or trace auditing, but is excluded from active, default retrieval pools.
+* **Invalided:** The memory is explicitly flagged as incorrect or rejected, serving as a negative constraint.
 
 ---
 
-## 6. Extensible Metadata Rationale
+## 4. Relationship Semantics
 
-The `Metadata` field exists as an architectural compromise between strict uniformity and domain-specific specialization. 
+The `Relationships` field defines directed links between memory objects. This allows Aether to represent structural hierarchies and logical derivations:
 
-While the universal envelope guarantees that Aether's core engine can route and trace any memory, individual domains have unique structural requirements. For example:
-
-* **Project Memory:** Needs to record deadlines, task dependencies, and repository coordinates.
-* **Working Memory:** Needs to capture parent message IDs, conversation branch offsets, and transient system focus markers.
-* **Self Model Memory:** Needs to capture resource allocation limits, runtime constraints, and local tool capabilities.
-
-By storing these specialized attributes inside the `Metadata` envelope, domain-specific modules can execute high-fidelity operations without requiring changes to the core universal structure. The main cognitive engine remains completely insulated from domain complexity.
+* **Derived From:** Indicates that memory B was generated by processing or summarizing memory A. Maintains traceability across synthesis cycles.
+* **Related To:** Establishes an associative, non-hierarchical connection between two memories.
+* **Part Of:** Defines structural containment (e.g., a specific project task memory is part of a larger project memory).
+* **Supports:** Denotes a logical connection where memory A acts as reinforcing evidence for memory B.
+* **Conflicts With:** Explicitly marks two memories that represent contradictory information, prompting resolution mechanisms.
 
 ---
 
-## 7. Future-Proof Design Compatibility
+## 5. Future Compatibility
 
-The Universal Memory Object is explicitly designed to support advanced cognitive capabilities without requiring structural refactoring:
+To remain durable over multiple years of evolution, any physical storage implementation of the Memory Object must preserve these qualitative behaviors:
 
-* **Reasoning Sockets:** Pluggable AI logic can consume a Memory Object and construct a reasoning trace directly inside the object's `Evidence Log` or `Metadata`, documenting the logical steps taken to reach a conclusion.
-* **Knowledge Graphs:** Nodes and directional edges can be established by storing arrays of target `Memory IDs` with relationship qualifiers inside the `Metadata` or `Tags` of related objects, forming a decentralized, highly flexible knowledge graph.
-* **User Cognitive Modeling:** Advanced modeling engines can aggregate thousands of low-level "Candidate" and "Verified" memories, processing them into a highly synthesized "User Model Memory" that captures abstract planning and thinking styles, all using the same standard container.
+1. **Format Agnosticism:** The core schema must not depend on database-specific data types (such as custom spatial or document types).
+2. **Schema Extensibility:** Adding new fields inside `Metadata` or adding new relationship types must not break backwards compatibility for existing query modules.
+3. **Trace Preservation:** When memory objects undergo synthesis (merges or splits), the original lineage must be preserved in the `Relationships` or `Evidence` metadata of the resulting objects.
 
 ---
 
-## 8. Architectural Review & Governance
+## 6. Open Questions
 
-### Open Questions
-1. **Evidence Log Limits:** For highly active, long-lived memories, the `Evidence Log` could grow indefinitely. How should we handle evidence pruning or summarization without violating the traceability mandate?
-2. **Cryptographic Validation:** Should the `Memory ID` or a hash of the content be cryptographically signed by the user's sovereign Identity Bridge to guarantee no unauthorized external alterations have occurred?
+The following topics are deferred to future specialized specifications:
 
-### Future Dependencies
-* **SEC-04-MEM (Memory Engine Schema):** Will define the physical database schema, indexing strategies, and read/write performance envelopes that implement this object.
-* **SEC-03-EVT (Event Mesh Protocol):** Will define the serialization format (e.g., Protocol Buffers) used to transmit Memory Objects across the event bus.
+1. **Relationship Semantics:** How are complex relationships queried, traversed, and validated across large cognitive networks?
+2. **Confidence Models:** What mathematical frameworks or heuristics govern how confidence is calculated, updated, and decayed based on incoming evidence?
+3. **Lifecycle and Sync Policies:** How are memories synchronized across distributed user terminals, and what replication rules apply to resolving conflicts?
+4. **Memory Merge & Split:** What are the precise transactional boundaries and rules when two related candidate memories merge into a single verified memory, or when a memory is split?
 
 ---
 
 * **Author:** Core Architecture Group / Chief Systems Architect
-* **Version:** 0.1
+* **Version:** 0.2
 * **Date:** July 2026
