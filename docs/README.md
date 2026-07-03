@@ -38,11 +38,19 @@ Any modification to Aether's codebase must align with and trace back to the prin
   * Pluggable schema architectures for Robotics, Vehicles, and Wearables.
 
 ### [04_Memory_Principles.md - Aether Memory Principles](04_Memory_Principles.md)
-* **Status:** 🟡 DRAFT / PROPOSED (v0.1)  
+* **Status:** 🟡 DRAFT / PROPOSED (v0.2)  
 * **Abstract:** Establishes the core, technology-independent behavioral and semantic guidelines for memory systems within Aether.
 * **Key Content:**
-  * 12 core memory principles ensuring user ownership, explainability, confidence separation, and context safety.
+  * 15 core memory principles ensuring user ownership, explicit user models, auditability, explainability, confidence separation, independent domains, and context safety.
   * Technology-independent architectural definitions for long-term memory.
+
+### [02_Memory_Object.md - The Universal Memory Object](02_Memory_Object.md)
+* **Status:** 🟡 DRAFT / PROPOSED (v0.1)  
+* **Abstract:** Defines the universal conceptual structure of every memory within Aether, serving as the foundational, atomic unit of retention.
+* **Key Content:**
+  * Universal schema fields (Memory ID, Domain, Content, Context, Source, Evidence Log, Confidence, Status, Timestamps, Tags, and Metadata).
+  * Five primary conceptual memory states (Candidate, Verified, Archived, Rejected, Forgotten).
+  * Behavioral guarantees for memory uniqueness, trace lineage, and domain extensibility.
 
 ---
 
