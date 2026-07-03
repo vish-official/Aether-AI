@@ -6,6 +6,7 @@ export { ModuleLoader } from './module-loader';
 export { CoreEngine } from './engine';
 export { runBootstrap } from './bootstrap';
 export { ToolManager } from './tool-manager';
+export { ToolRunner } from './tool-runner';
 
 // Types & Interfaces
 export type { SystemConfig } from './config';
