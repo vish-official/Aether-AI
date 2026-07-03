@@ -29,8 +29,9 @@ export class CoreEngine {
       this.logger.info('CoreEngine', '[Event Reactive] Captured modules.loaded. Initiating CoreEngine boot...');
       try {
         await this.boot();
-      } catch (err: any) {
-        this.logger.fatal('CoreEngine', `Failed to boot engine reactively: ${err.message}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.fatal('CoreEngine', `Failed to boot engine reactively: ${message}`);
       }
     });
   }
@@ -72,9 +73,10 @@ export class CoreEngine {
         status: 'healthy',
         timestamp: new Date().toISOString()
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.state = 'FAILED';
-      this.logger.fatal('CoreEngine', `System boot failure: ${err.message}`);
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.fatal('CoreEngine', `System boot failure: ${message}`);
       throw err;
     }
   }
@@ -92,10 +94,19 @@ export class CoreEngine {
       await this.loader.shutdownAll();
       this.state = 'UNINITIALIZED';
       this.logger.info('CoreEngine', 'Aether Core shut down gracefully.');
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.state = 'FAILED';
-      this.logger.error('CoreEngine', `System shutdown encountered errors: ${err.message}`);
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error('CoreEngine', `System shutdown encountered errors: ${message}`);
     }
+  }
+
+  public getLogger(): Logger {
+    return this.logger;
+  }
+
+  public getEventBus(): EventBus {
+    return this.eventBus;
   }
 
   public getStatus() {

@@ -9,6 +9,7 @@ export { ToolManager } from './tool-manager';
 export { ToolRunner } from './tool-runner';
 export { OpenApplicationTool } from './open-application-tool';
 export { PermissionManager } from './permission-manager';
+export { NodeRuntime } from './runtime';
 export {
   ToolError,
   ToolRegistrationError,
@@ -17,6 +18,7 @@ export {
 } from './errors';
 
 // Types & Interfaces
+export type { IRuntime, PlatformOS } from './runtime';
 export type { SystemConfig } from './config';
 export type { OpenApplicationArgs } from './open-application-tool';
 export type { LogLevel, LogMessage, LogListener } from './logger';

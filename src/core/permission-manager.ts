@@ -101,14 +101,40 @@ export class PermissionManager {
   }
 
   /**
-   * Sets a permission's status to granted.
-   * Publishes a 'permission.granted' event.
+   * Helper to retrieve a registered permission or throw a PermissionError if not found.
    */
-  public grant(name: string): void {
+  private getRequiredPermission(name: string): Permission {
     const permission = this.permissions.get(name);
     if (!permission) {
       throw new PermissionError(`Permission with name [${name}] is not registered.`, 'PERMISSION_NOT_FOUND');
     }
+    return permission;
+  }
+
+  /**
+   * Helper to construct, publish and return a PermissionDecision.
+   */
+  private publishAndReturnDecision(
+    toolId: string,
+    allowed: boolean,
+    reason: string,
+    timestamp: string
+  ): PermissionDecision {
+    const decision: PermissionDecision = { allowed, reason, timestamp };
+    this.eventBus.publish('permission.evaluated', 'PermissionManager', {
+      toolId,
+      decision,
+      timestamp
+    });
+    return decision;
+  }
+
+  /**
+   * Sets a permission's status to granted.
+   * Publishes a 'permission.granted' event.
+   */
+  public grant(name: string): void {
+    const permission = this.getRequiredPermission(name);
 
     if (!permission.granted) {
       permission.granted = true;
@@ -125,10 +151,7 @@ export class PermissionManager {
    * Publishes a 'permission.revoked' event.
    */
   public revoke(name: string): void {
-    const permission = this.permissions.get(name);
-    if (!permission) {
-      throw new PermissionError(`Permission with name [${name}] is not registered.`, 'PERMISSION_NOT_FOUND');
-    }
+    const permission = this.getRequiredPermission(name);
 
     if (permission.granted) {
       permission.granted = false;
@@ -150,19 +173,12 @@ export class PermissionManager {
 
     // 1. If no permissions are required, it's allowed by default.
     if (!requiredPermissions || requiredPermissions.length === 0) {
-      const decision: PermissionDecision = {
-        allowed: true,
-        reason: `Access authorized. Tool [${toolId}] requires no explicit permissions.`,
-        timestamp
-      };
-
-      this.eventBus.publish('permission.evaluated', 'PermissionManager', {
+      return this.publishAndReturnDecision(
         toolId,
-        decision,
+        true,
+        `Access authorized. Tool [${toolId}] requires no explicit permissions.`,
         timestamp
-      });
-
-      return decision;
+      );
     }
 
     // 2. Scan all required permissions.
@@ -188,35 +204,12 @@ export class PermissionManager {
       }
 
       const reason = `Access denied for tool [${toolId}]. ${parts.join('; ')}`;
-      const decision: PermissionDecision = {
-        allowed: false,
-        reason,
-        timestamp
-      };
-
-      this.eventBus.publish('permission.evaluated', 'PermissionManager', {
-        toolId,
-        decision,
-        timestamp
-      });
-
-      return decision;
+      return this.publishAndReturnDecision(toolId, false, reason, timestamp);
     }
 
     // 4. Otherwise, authorized.
-    const decision: PermissionDecision = {
-      allowed: true,
-      reason: `Access authorized. All required permissions [${requiredPermissions.join(', ')}] are granted.`,
-      timestamp
-    };
-
-    this.eventBus.publish('permission.evaluated', 'PermissionManager', {
-      toolId,
-      decision,
-      timestamp
-    });
-
-    return decision;
+    const reason = `Access authorized. All required permissions [${requiredPermissions.join(', ')}] are granted.`;
+    return this.publishAndReturnDecision(toolId, true, reason, timestamp);
   }
 
   /**
