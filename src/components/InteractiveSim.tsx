@@ -10,7 +10,8 @@ import {
   ModuleLoader as RealModuleLoader,
   IModule,
   ModuleContext,
-  CoreEngine as RealCoreEngine
+  CoreEngine as RealCoreEngine,
+  ModuleStatus
 } from '../core';
 
 interface SimulationEvent {
@@ -29,16 +30,16 @@ interface SimulationEvent {
 const SIM_EVENTS: SimulationEvent[] = [
   {
     id: 'real-bootstrap',
-    name: 'Aether Core Bootstrap (Sprint 1 Live)',
+    name: 'Aether Core Bootstrap (Sprint 3 Live)',
     subsystem: 'AetherCore',
-    description: 'Instantiate and execute the genuine Aether Core engine in the browser context. Watch the Configuration, Logger, Event Bus, and Module Loader coordinate in real-time.',
+    description: 'Instantiate and execute the genuine Aether Core engine in the browser context. Witness Configuration, Logger, Event Bus, and the advanced Module Loader with dependency-sorted, lifecycle-managed modules in real-time.',
     steps: [
       { component: 'ConfigurationManager', action: 'Initialize settings and environmental variables', status: 'success', payload: 'LogLevel: INFO, Version: 1.0.0-bootstrap' },
       { component: 'Logger', action: 'Initialize structured leveled logging output stream', status: 'success', payload: 'Levels: DEBUG, INFO, WARN, ERROR, FATAL' },
       { component: 'EventBus', action: 'Start the decoupled publish-subscribe event broker', status: 'success', payload: 'Channel: Wildcard * audit stream enabled' },
-      { component: 'ModuleLoader', action: 'Register system-approved modules into context', status: 'success', payload: 'Modules: IdentityBridge, StorageAdapter, SecurityEnclave' },
-      { component: 'CoreEngine', action: 'Execute core engine boot sequence & load modules', status: 'success', payload: 'Initiating 3 core system modules' },
-      { component: 'AetherCore', action: 'Complete boot flow and transition system state to RUNNING', status: 'success', payload: 'System status: HEALTHY' }
+      { component: 'ModuleLoader', action: 'Register system-approved modules and resolve topological dependencies', status: 'success', payload: 'Sorted: SecurityEnclave -> StorageAdapter, IdentityBridge' },
+      { component: 'CoreEngine', action: 'Execute core engine boot sequence & load modules', status: 'success', payload: 'Initiating 3 core system modules in dependency order' },
+      { component: 'AetherCore', action: 'Complete boot flow and transition system state to RUNNING', status: 'success', payload: 'System status: SECURE & HEALTHY' }
     ]
   },
   {
@@ -188,35 +189,92 @@ export default function InteractiveSim() {
     // Register modules
     class BrowserIdentityModule implements IModule {
       public name = 'IdentityBridge';
-      public async init(ctx: ModuleContext): Promise<void> {
+      public dependencies = ['SecurityEnclave'];
+      public isCritical = true;
+      private status: ModuleStatus = 'UNINITIALIZED';
+
+      public async initialize(ctx: ModuleContext): Promise<void> {
+        this.status = 'INITIALIZING';
         ctx.logger.info(this.name, 'Initializing identity verification structures...');
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 250));
         ctx.logger.info(this.name, 'Local sovereign identity cryptographically loaded.');
-        ctx.eventBus.publish('identity:ready', this.name, { nodeId: 'node_aether_alpha_01' });
+        this.status = 'INITIALIZED';
       }
-      public async shutdown(): Promise<void> {}
+
+      public async start(ctx: ModuleContext): Promise<void> {
+        this.status = 'STARTING';
+        ctx.eventBus.publish('identity:ready', this.name, { nodeId: 'node_aether_alpha_01' });
+        this.status = 'STARTED';
+      }
+
+      public async stop(): Promise<void> {
+        this.status = 'STOPPING';
+        this.status = 'STOPPED';
+      }
+
+      public getStatus(): ModuleStatus {
+        return this.status;
+      }
     }
 
     class BrowserStorageModule implements IModule {
       public name = 'StorageAdapter';
-      public async init(ctx: ModuleContext): Promise<void> {
+      public dependencies = ['SecurityEnclave'];
+      public isCritical = true;
+      private status: ModuleStatus = 'UNINITIALIZED';
+
+      public async initialize(ctx: ModuleContext): Promise<void> {
+        this.status = 'INITIALIZING';
         ctx.logger.info(this.name, 'Initializing secure local filesystem layers...');
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 250));
         ctx.logger.info(this.name, 'Virtual file allocation tables mapped successfully.');
-        ctx.eventBus.publish('storage:ready', this.name, { status: 'mounted', writable: true });
+        this.status = 'INITIALIZED';
       }
-      public async shutdown(): Promise<void> {}
+
+      public async start(ctx: ModuleContext): Promise<void> {
+        this.status = 'STARTING';
+        ctx.eventBus.publish('storage:ready', this.name, { status: 'mounted', writable: true });
+        this.status = 'STARTED';
+      }
+
+      public async stop(): Promise<void> {
+        this.status = 'STOPPING';
+        this.status = 'STOPPED';
+      }
+
+      public getStatus(): ModuleStatus {
+        return this.status;
+      }
     }
 
     class BrowserSecurityModule implements IModule {
       public name = 'SecurityEnclave';
-      public async init(ctx: ModuleContext): Promise<void> {
+      public dependencies = [];
+      public isCritical = true;
+      private status: ModuleStatus = 'UNINITIALIZED';
+
+      public async initialize(ctx: ModuleContext): Promise<void> {
+        this.status = 'INITIALIZING';
         ctx.logger.info(this.name, 'Connecting to hardware TPM security chip...');
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 250));
         ctx.logger.info(this.name, 'Symmetric and asymmetric cryptographic enclaves isolated.');
-        ctx.eventBus.publish('security:ready', this.name, { mode: 'hardware_secure' });
+        this.status = 'INITIALIZED';
       }
-      public async shutdown(): Promise<void> {}
+
+      public async start(ctx: ModuleContext): Promise<void> {
+        this.status = 'STARTING';
+        ctx.eventBus.publish('security:ready', this.name, { mode: 'hardware_secure' });
+        this.status = 'STARTED';
+      }
+
+      public async stop(): Promise<void> {
+        this.status = 'STOPPING';
+        this.status = 'STOPPED';
+      }
+
+      public getStatus(): ModuleStatus {
+        return this.status;
+      }
     }
 
     loader.register(new BrowserIdentityModule());

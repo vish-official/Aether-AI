@@ -1,57 +1,132 @@
 import { ConfigurationManager } from './config';
 import { Logger } from './logger';
 import { EventBus } from './event-bus';
-import { ModuleLoader, IModule, ModuleContext } from './module-loader';
+import { ModuleLoader, IModule, ModuleContext, ModuleStatus } from './module-loader';
 import { CoreEngine } from './engine';
 
 // --- Simple, compliant, non-blocking core modules ---
 
 class IdentityBridgeModule implements IModule {
   public name = 'IdentityBridge';
+  public dependencies = ['SecurityEnclave'];
+  public isCritical = true;
+  private status: ModuleStatus = 'UNINITIALIZED';
 
-  public async init(context: ModuleContext): Promise<void> {
+  public async initialize(context: ModuleContext): Promise<void> {
+    this.status = 'INITIALIZING';
     context.logger.info(this.name, 'Initializing identity verification structures...');
     context.eventBus.publish('identity:init_started', this.name, {});
     // Simulating light async initialization
     await new Promise((resolve) => setTimeout(resolve, 50));
     context.logger.info(this.name, 'Local sovereign identity cryptographically loaded.');
+    this.status = 'INITIALIZED';
+  }
+
+  public async start(context: ModuleContext): Promise<void> {
+    this.status = 'STARTING';
     context.eventBus.publish('identity:ready', this.name, { nodeId: 'node_aether_alpha_01' });
+    this.status = 'STARTED';
+  }
+
+  public async stop(): Promise<void> {
+    this.status = 'STOPPING';
+    this.status = 'STOPPED';
+  }
+
+  public getStatus(): ModuleStatus {
+    return this.status;
+  }
+
+  // Legacy backwards compatibility
+  public async init(context: ModuleContext): Promise<void> {
+    await this.initialize(context);
+    await this.start(context);
   }
 
   public async shutdown(): Promise<void> {
-    // Clean cleanup
+    await this.stop();
   }
 }
 
 class StorageAdapterModule implements IModule {
   public name = 'StorageAdapter';
+  public dependencies = ['SecurityEnclave'];
+  public isCritical = true;
+  private status: ModuleStatus = 'UNINITIALIZED';
 
-  public async init(context: ModuleContext): Promise<void> {
+  public async initialize(context: ModuleContext): Promise<void> {
+    this.status = 'INITIALIZING';
     context.logger.info(this.name, 'Initializing secure local filesystem layers...');
     context.eventBus.publish('storage:init_started', this.name, {});
     await new Promise((resolve) => setTimeout(resolve, 50));
     context.logger.info(this.name, 'Virtual file allocation tables mapped successfully.');
+    this.status = 'INITIALIZED';
+  }
+
+  public async start(context: ModuleContext): Promise<void> {
+    this.status = 'STARTING';
     context.eventBus.publish('storage:ready', this.name, { status: 'mounted', writable: true });
+    this.status = 'STARTED';
+  }
+
+  public async stop(): Promise<void> {
+    this.status = 'STOPPING';
+    this.status = 'STOPPED';
+  }
+
+  public getStatus(): ModuleStatus {
+    return this.status;
+  }
+
+  // Legacy backwards compatibility
+  public async init(context: ModuleContext): Promise<void> {
+    await this.initialize(context);
+    await this.start(context);
   }
 
   public async shutdown(): Promise<void> {
-    // Clean cleanup
+    await this.stop();
   }
 }
 
 class SecurityEnclaveModule implements IModule {
   public name = 'SecurityEnclave';
+  public dependencies = [];
+  public isCritical = true;
+  private status: ModuleStatus = 'UNINITIALIZED';
 
-  public async init(context: ModuleContext): Promise<void> {
+  public async initialize(context: ModuleContext): Promise<void> {
+    this.status = 'INITIALIZING';
     context.logger.info(this.name, 'Connecting to hardware TPM security chip...');
     context.eventBus.publish('security:init_started', this.name, {});
     await new Promise((resolve) => setTimeout(resolve, 50));
     context.logger.info(this.name, 'Symmetric and asymmetric cryptographic enclaves isolated.');
+    this.status = 'INITIALIZED';
+  }
+
+  public async start(context: ModuleContext): Promise<void> {
+    this.status = 'STARTING';
     context.eventBus.publish('security:ready', this.name, { mode: 'hardware_secure' });
+    this.status = 'STARTED';
+  }
+
+  public async stop(): Promise<void> {
+    this.status = 'STOPPING';
+    this.status = 'STOPPED';
+  }
+
+  public getStatus(): ModuleStatus {
+    return this.status;
+  }
+
+  // Legacy backwards compatibility
+  public async init(context: ModuleContext): Promise<void> {
+    await this.initialize(context);
+    await this.start(context);
   }
 
   public async shutdown(): Promise<void> {
-    // Clean cleanup
+    await this.stop();
   }
 }
 

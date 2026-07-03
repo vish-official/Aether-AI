@@ -10,5 +10,5 @@ export { runBootstrap } from './bootstrap';
 export type { SystemConfig } from './config';
 export type { LogLevel, LogMessage, LogListener } from './logger';
 export type { SystemEvent, EventHandler } from './event-bus';
-export type { ModuleContext, IModule } from './module-loader';
+export type { ModuleContext, IModule, ModuleStatus } from './module-loader';
 export type { SystemState } from './engine';

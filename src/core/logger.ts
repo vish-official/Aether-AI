@@ -52,6 +52,27 @@ export class Logger {
       this.info('Logger', `[Observed Event: logger.ready] Logger subsystem initialized and ready.`);
     });
 
+    // Sprint 3 Module Loader Events auto-logging
+    eventBus.subscribe('module.registered', (event) => {
+      this.info('Logger', `[Observed Event: module.registered] Module registered: ${event.payload.moduleName}`);
+    });
+
+    eventBus.subscribe('module.initialized', (event) => {
+      this.info('Logger', `[Observed Event: module.initialized] Module initialized: ${event.payload.moduleName}`);
+    });
+
+    eventBus.subscribe('module.started', (event) => {
+      this.info('Logger', `[Observed Event: module.started] Module started: ${event.payload.moduleName}`);
+    });
+
+    eventBus.subscribe('module.stopped', (event) => {
+      this.info('Logger', `[Observed Event: module.stopped] Module stopped: ${event.payload.moduleName}`);
+    });
+
+    eventBus.subscribe('module.failed', (event) => {
+      this.error('Logger', `[Observed Event: module.failed] Module failed: ${event.payload.moduleName}. Error: ${event.payload.error}`);
+    });
+
     eventBus.subscribe('modules.loaded', (event) => {
       this.info('Logger', `[Observed Event: modules.loaded] All registered modules loaded: ${event.payload.loadedModules?.join(', ')}`);
     });
