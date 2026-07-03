@@ -1,6 +1,6 @@
 # Aether Memory Principles
 
-* **Status:** 🟡 DRAFT / PROPOSED (v0.1)  
+* **Status:** 🟡 DRAFT / PROPOSED (v0.2)  
 * **Abstract:** This document establishes the core, technology-independent behavioral and semantic guidelines for memory systems within Aether. These principles govern any memory features, storage engines, or indexing mechanisms designed for the Aether ecosystem.
 
 ---
@@ -11,7 +11,7 @@ These principles define how memory behaves inside Aether.
 
 They are technology-independent.
 
-They apply regardless of whether memory is stored in SQLite, JSON, Markdown, a graph database, or any future storage system.
+They apply regardless of whether memory is stored in JSON, Markdown, a relational system, a graph database, or any future storage engine.
 
 Every future memory feature must follow these principles.
 
@@ -20,9 +20,9 @@ Every future memory feature must follow these principles.
 ## 📖 The Core Principles
 
 ### Principle 1 — Memory Exists to Help
-Memory exists only to improve Aether's ability to help the user.
+Memory exists to preserve information that improves Aether's ability to understand, assist, collaborate with, and continuously adapt to the user over time.
 
-If remembering something does not increase usefulness, it should not become long-term memory.
+If remembering something does not increase this adaptive capability or utility, it should not become long-term memory.
 
 ---
 
@@ -50,9 +50,9 @@ Aether must never present an inference as if it were a confirmed fact.
 ---
 
 ### Principle 4 — Every Memory Has Evidence
-Every stored memory must have a known origin.
+Every stored memory must have a known, verifiable origin.
 
-Examples:
+Examples of origins:
 * User explicitly stated it.
 * Imported from user data.
 * Learned through repeated interaction.
@@ -76,13 +76,9 @@ History should remain traceable where appropriate.
 ---
 
 ### Principle 6 — Confidence Is Separate from Truth
-Every memory has confidence.
+Every memory has an associated confidence level representing how certain Aether is.
 
-Confidence represents how certain Aether is.
-
-Confidence never changes reality.
-
-A highly confident memory may still be wrong.
+Confidence represents how certain Aether is about the accuracy or relevance of a memory based on available evidence. However, confidence must always be supported by evidence and is never proof of objective truth. A highly confident memory may still be wrong, and evidence should remain traceable whenever possible.
 
 ---
 
@@ -97,9 +93,9 @@ Aether should intentionally remove, archive, or expire information that no longe
 A memory without context is often misleading.
 
 Important memories should preserve:
-* When
-* Why
-* Source
+* When (temporal aspect)
+* Why (trigger or context of acquisition)
+* Source (who or what initiated it)
 * Related project
 * Related people
 
@@ -137,3 +133,49 @@ Memory exists to improve:
 Memory behavior is defined before storage technology.
 
 Changing the storage backend must not change memory semantics.
+
+---
+
+### Principle 13 — Memory Builds an Explicit User Model
+Memory is not simply static storage; it contributes to an active, evolving model of the user.
+
+This model captures:
+* Preferences
+* Goals
+* Workflows
+* Planning style
+* Communication style
+* Thinking style
+
+To protect user agency, this model must always remain transparent, inspectable, editable, and correctable by the user. Aether must never claim absolute certainty about any inferred characteristics.
+
+---
+
+### Principle 14 — Memory Has Independent Domains
+Memory is organized into distinct, decoupled functional domains.
+
+Examples of domains:
+* **Identity:** Core details about the user's persona and context.
+* **Preferences:** Explicit settings and environmental choices.
+* **Projects:** State, status, and constraints of active or historic projects.
+* **Working Memory:** Highly transient, immediate conversational context.
+* **Reflections:** Higher-level takeaways and processed patterns.
+* **Knowledge:** Facts, domain-specific concepts, or rules.
+* **User Model:** The synthesized, evolving understanding of the user.
+* **Self Model:** Aether's representation of its own capabilities and system state.
+
+These domains may evolve independently over time while adhering to a shared core memory architecture.
+
+---
+
+### Principle 15 — Memory Must Be Auditable
+Important memories should preserve enough historical lineage to answer auditing questions.
+
+Every auditable memory should be able to supply answers conceptually to:
+* Where did this come from? (Originating source)
+* When was it created? (Creation timestamp)
+* Why was it created? (Underlying rationale)
+* What changed? (Diff of modifications)
+* When was it changed? (Modification timestamp)
+
+These audit trails must be treated conceptually as behavioral guarantees, independent of underlying database storage mechanics.
