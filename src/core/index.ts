@@ -7,9 +7,11 @@ export { CoreEngine } from './engine';
 export { runBootstrap } from './bootstrap';
 export { ToolManager } from './tool-manager';
 export { ToolRunner } from './tool-runner';
+export { OpenApplicationTool } from './open-application-tool';
 
 // Types & Interfaces
 export type { SystemConfig } from './config';
+export type { OpenApplicationArgs } from './open-application-tool';
 export type { LogLevel, LogMessage, LogListener } from './logger';
 export type { SystemEvent, EventHandler } from './event-bus';
 export type { ModuleContext, IModule, ModuleStatus } from './module-loader';
