@@ -13,7 +13,7 @@ export interface OpenApplicationArgs {
  * OpenApplicationTool is a platform-aware system tool that launches a desktop
  * application by name on the host operating system.
  */
-export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, any> {
+export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, unknown> {
   public readonly metadata: ToolMetadata = {
     id: 'open-application',
     name: 'Open Application',
@@ -46,7 +46,7 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
   /**
    * Validates arguments before execution to guarantee safety, type-correctness, and non-emptiness.
    */
-  public async validate(args: any): Promise<boolean> {
+  public async validate(args: unknown): Promise<boolean> {
     if (args === null || args === undefined) {
       if (this.context) {
         this.context.logger.warn('OpenApplicationTool', 'Validation failed: arguments are null or undefined.');
@@ -65,7 +65,8 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
 
     // Object argument representing structured inputs
     if (typeof args === 'object') {
-      const appName = args.appName ?? args.name ?? args.application;
+      const obj = args as Record<string, unknown>;
+      const appName = obj.appName ?? obj.name ?? obj.application;
       if (typeof appName !== 'string') {
         if (this.context) {
           this.context.logger.warn('OpenApplicationTool', 'Validation failed: appName must be a non-empty string.');
@@ -88,7 +89,7 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
   /**
    * Executes the tool with the provided arguments, returning a structured ToolResult.
    */
-  public async execute(args: OpenApplicationArgs | string): Promise<ToolResult<any>> {
+  public async execute(args: OpenApplicationArgs | string): Promise<ToolResult<unknown>> {
     const startTime = performance.now();
     this.status = 'executing';
 
@@ -97,7 +98,9 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
     if (typeof args === 'string') {
       appName = args.trim();
     } else if (args && typeof args === 'object') {
-      appName = (args.appName ?? (args as any).name ?? (args as any).application ?? '').trim();
+      const obj = args as unknown as Record<string, unknown>;
+      const rawName = obj.appName ?? obj.name ?? obj.application ?? '';
+      appName = typeof rawName === 'string' ? rawName.trim() : '';
     }
 
     const logPrefix = `[AppName: ${appName}]`;
@@ -167,23 +170,24 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
       // Using /* @vite-ignore */ to prevent Vite compilation issues in browser-targeted builds
       const { exec } = await import(/* @vite-ignore */ 'child_process');
 
-      return new Promise<ToolResult<any>>((resolve) => {
-        exec(command, (error: any, stdout: string, stderr: string) => {
+      return new Promise<ToolResult<unknown>>((resolve) => {
+        exec(command, (error: unknown, stdout: string, stderr: string) => {
           const durationMs = Math.round(performance.now() - startTime);
           const timestamp = new Date().toISOString();
           this.status = 'ready';
 
           if (error) {
+            const err = error as Error & { code?: string | number; signal?: string };
             let errorCode = 'LAUNCH_FAILED';
-            let errorMessage = `Failed to launch application [${appName}]: ${error.message}`;
+            let errorMessage = `Failed to launch application [${appName}]: ${err.message}`;
 
             // Infer if command/application does not exist or was not found
             // Code 127 on Linux/macOS and ENOENT indicate command not found
             const hasCmdNotFoundKeywords = 
               (stderr && (stderr.toLowerCase().includes('not found') || stderr.toLowerCase().includes('not recognized'))) ||
-              (error.message && (error.message.toLowerCase().includes('not found') || error.message.toLowerCase().includes('not recognized')));
+              (err.message && (err.message.toLowerCase().includes('not found') || err.message.toLowerCase().includes('not recognized')));
 
-            if (error.code === 'ENOENT' || error.code === 127 || hasCmdNotFoundKeywords) {
+            if (err.code === 'ENOENT' || err.code === 127 || hasCmdNotFoundKeywords) {
               errorCode = 'APP_NOT_FOUND';
               errorMessage = `The application [${appName}] could not be found or is not installed on this system.`;
             }
@@ -197,7 +201,7 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
               error: {
                 code: errorCode,
                 message: errorMessage,
-                details: { stderr, stdout, code: error.code, signal: error.signal }
+                details: { stderr, stdout, code: err.code, signal: err.signal }
               },
               durationMs,
               timestamp
@@ -220,10 +224,11 @@ export class OpenApplicationTool implements ITool<OpenApplicationArgs | string, 
           }
         });
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.status = 'ready';
       const durationMs = Math.round(performance.now() - startTime);
-      const errorMsg = `Unexpected error importing child_process or preparing execution: ${err.message}`;
+      const message = err instanceof Error ? err.message : String(err);
+      const errorMsg = `Unexpected error importing child_process or preparing execution: ${message}`;
 
       if (this.context) {
         this.context.logger.error('OpenApplicationTool', errorMsg);

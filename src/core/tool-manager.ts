@@ -1,6 +1,7 @@
 import { ITool, ToolStatus, ToolMetadata } from './tool';
 import { EventBus } from './event-bus';
 import { Logger } from './logger';
+import { ToolRegistrationError, ToolExecutionError } from './errors';
 
 /**
  * ToolManager is responsible for managing the lifecycle of all registered tools
@@ -26,12 +27,12 @@ export class ToolManager {
    */
   public register(tool: ITool): void {
     if (!tool || !tool.metadata || !tool.metadata.id) {
-      throw new Error('Tool Registration Error: Invalid tool instance or missing metadata.');
+      throw new ToolRegistrationError('Invalid tool instance or missing metadata.');
     }
 
     const id = tool.metadata.id;
     if (this.tools.has(id)) {
-      throw new Error(`Tool Registration Error: Tool with ID [${id}] is already registered.`);
+      throw new ToolRegistrationError(`Tool with ID [${id}] is already registered.`);
     }
 
     this.tools.set(id, tool);
@@ -115,7 +116,7 @@ export class ToolManager {
   public enable(id: string): void {
     const tool = this.get(id);
     if (!tool) {
-      throw new Error(`Tool Error: Tool with ID [${id}] is not registered.`);
+      throw new ToolExecutionError(`Tool with ID [${id}] is not registered.`, 'TOOL_NOT_FOUND');
     }
 
     if (this.disabledTools.has(id)) {
@@ -139,7 +140,7 @@ export class ToolManager {
   public disable(id: string): void {
     const tool = this.get(id);
     if (!tool) {
-      throw new Error(`Tool Error: Tool with ID [${id}] is not registered.`);
+      throw new ToolExecutionError(`Tool with ID [${id}] is not registered.`, 'TOOL_NOT_FOUND');
     }
 
     if (!this.disabledTools.has(id)) {
@@ -165,7 +166,7 @@ export class ToolManager {
   public getStatus(id: string): ToolStatus {
     const tool = this.get(id);
     if (!tool) {
-      throw new Error(`Tool Error: Tool with ID [${id}] is not registered.`);
+      throw new ToolExecutionError(`Tool with ID [${id}] is not registered.`, 'TOOL_NOT_FOUND');
     }
 
     if (this.disabledTools.has(id)) {

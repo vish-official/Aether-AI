@@ -4,6 +4,7 @@ import { Logger } from './logger';
 import { ITool, ToolResult } from './tool';
 import { ModuleContext } from './module-loader';
 import { PermissionManager } from './permission-manager';
+import { ToolError, ToolExecutionError } from './errors';
 
 /**
  * ToolRunner is responsible for orchestrating the execution lifecycle of registered tools.
@@ -24,10 +25,10 @@ export class ToolRunner {
     logger: Logger,
     context?: ModuleContext
   ) {
-    if (!toolManager) throw new Error('ToolRunner Error: ToolManager is required.');
-    if (!permissionManager) throw new Error('ToolRunner Error: PermissionManager is required.');
-    if (!eventBus) throw new Error('ToolRunner Error: EventBus is required.');
-    if (!logger) throw new Error('ToolRunner Error: Logger is required.');
+    if (!toolManager) throw new ToolError('ToolManager is required.', 'MISSING_DEPENDENCY');
+    if (!permissionManager) throw new ToolError('PermissionManager is required.', 'MISSING_DEPENDENCY');
+    if (!eventBus) throw new ToolError('EventBus is required.', 'MISSING_DEPENDENCY');
+    if (!logger) throw new ToolError('Logger is required.', 'MISSING_DEPENDENCY');
 
     this.toolManager = toolManager;
     this.permissionManager = permissionManager;
@@ -38,17 +39,37 @@ export class ToolRunner {
   }
 
   /**
+   * Helper method to construct a standardized failed ToolResult.
+   */
+  private createFailedResult<TResult = unknown>(
+    code: string,
+    message: string,
+    durationMs: number,
+    details?: unknown
+  ): ToolResult<TResult> {
+    return {
+      success: false,
+      error: {
+        code,
+        message,
+        ...(details !== undefined ? { details } : {})
+      },
+      durationMs,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
    * Orchestrates the complete execution lifecycle of a tool by its ID.
    * 
    * @param toolId The unique identifier of the tool to execute
    * @param args The input arguments for the tool
    * @returns A promise resolving to a standardized ToolResult
    */
-  public async execute<TArgs = any, TResult = any>(
+  public async execute<TArgs = unknown, TResult = unknown>(
     toolId: string,
     args: TArgs
   ): Promise<ToolResult<TResult>> {
-    const timestamp = new Date().toISOString();
     const startTime = performance.now();
 
     // 1. Retrieve the tool from the Tool Manager
@@ -56,15 +77,7 @@ export class ToolRunner {
       const errorMsg = `Tool [${toolId}] is not registered.`;
       this.logger.error('ToolRunner', `Execution failed: ${errorMsg}`);
       
-      const result: ToolResult = {
-        success: false,
-        error: {
-          code: 'TOOL_NOT_FOUND',
-          message: errorMsg
-        },
-        durationMs: 0,
-        timestamp: new Date().toISOString()
-      };
+      const result = this.createFailedResult<TResult>('TOOL_NOT_FOUND', errorMsg, 0);
 
       this.eventBus.publish('tool.failed', 'ToolRunner', {
         toolId,
@@ -84,15 +97,7 @@ export class ToolRunner {
         const errorMsg = `Tool [${toolId}] is disabled and cannot be executed.`;
         this.logger.warn('ToolRunner', `Execution blocked: ${errorMsg}`);
 
-        const result: ToolResult = {
-          success: false,
-          error: {
-            code: 'TOOL_DISABLED',
-            message: errorMsg
-          },
-          durationMs: 0,
-          timestamp: new Date().toISOString()
-        };
+        const result = this.createFailedResult<TResult>('TOOL_DISABLED', errorMsg, 0);
 
         this.eventBus.publish('tool.failed', 'ToolRunner', {
           toolId,
@@ -102,20 +107,12 @@ export class ToolRunner {
 
         return result;
       }
-    } catch (err: any) {
-      const errorMsg = `Failed to check status for tool [${toolId}]: ${err.message}`;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const errorMsg = `Failed to check status for tool [${toolId}]: ${message}`;
       this.logger.error('ToolRunner', errorMsg);
 
-      const result: ToolResult = {
-        success: false,
-        error: {
-          code: 'STATUS_CHECK_ERROR',
-          message: errorMsg,
-          details: err
-        },
-        durationMs: 0,
-        timestamp: new Date().toISOString()
-      };
+      const result = this.createFailedResult<TResult>('STATUS_CHECK_ERROR', errorMsg, 0, err);
 
       this.eventBus.publish('tool.failed', 'ToolRunner', {
         toolId,
@@ -134,15 +131,7 @@ export class ToolRunner {
       const errorMsg = permissionDecision.reason;
       this.logger.warn('ToolRunner', `Execution blocked: ${errorMsg}`);
 
-      const result: ToolResult = {
-        success: false,
-        error: {
-          code: 'PERMISSION_DENIED',
-          message: errorMsg
-        },
-        durationMs: 0,
-        timestamp: new Date().toISOString()
-      };
+      const result = this.createFailedResult<TResult>('PERMISSION_DENIED', errorMsg, 0);
 
       this.eventBus.publish('permission.denied', 'ToolRunner', {
         toolId,
@@ -164,21 +153,13 @@ export class ToolRunner {
       try {
         this.logger.info('ToolRunner', `Initializing tool [${toolId}] before execution...`);
         await tool.initialize(this.context);
-      } catch (err: any) {
-        const errorMsg = `Asynchronous initialization failed for tool [${toolId}]: ${err.message}`;
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        const errorMsg = `Asynchronous initialization failed for tool [${toolId}]: ${message}`;
         this.logger.error('ToolRunner', errorMsg);
 
         const durationMs = Math.round(performance.now() - startTime);
-        const result: ToolResult = {
-          success: false,
-          error: {
-            code: 'INITIALIZATION_FAILED',
-            message: errorMsg,
-            details: err
-          },
-          durationMs,
-          timestamp: new Date().toISOString()
-        };
+        const result = this.createFailedResult<TResult>('INITIALIZATION_FAILED', errorMsg, durationMs, err);
 
         this.eventBus.publish('tool.failed', 'ToolRunner', {
           toolId,
@@ -205,21 +186,13 @@ export class ToolRunner {
       let isValid = false;
       try {
         isValid = await tool.validate(args);
-      } catch (validationErr: any) {
-        const errorMsg = `Validation threw an error for tool [${toolId}]: ${validationErr.message}`;
+      } catch (validationErr: unknown) {
+        const message = validationErr instanceof Error ? validationErr.message : String(validationErr);
+        const errorMsg = `Validation threw an error for tool [${toolId}]: ${message}`;
         this.logger.error('ToolRunner', errorMsg);
 
         const durationMs = Math.round(performance.now() - startTime);
-        toolResult = {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: errorMsg,
-            details: validationErr
-          },
-          durationMs,
-          timestamp: new Date().toISOString()
-        };
+        toolResult = this.createFailedResult<TResult>('VALIDATION_ERROR', errorMsg, durationMs, validationErr);
 
         this.eventBus.publish('tool.failed', 'ToolRunner', {
           toolId,
@@ -235,15 +208,7 @@ export class ToolRunner {
         this.logger.warn('ToolRunner', errorMsg);
 
         const durationMs = Math.round(performance.now() - startTime);
-        toolResult = {
-          success: false,
-          error: {
-            code: 'VALIDATION_FAILED',
-            message: errorMsg
-          },
-          durationMs,
-          timestamp: new Date().toISOString()
-        };
+        toolResult = this.createFailedResult<TResult>('VALIDATION_FAILED', errorMsg, durationMs);
 
         this.eventBus.publish('tool.failed', 'ToolRunner', {
           toolId,
@@ -264,28 +229,21 @@ export class ToolRunner {
           durationMs, // Keep the overall duration measured by the runner
           timestamp: new Date().toISOString()
         };
-      } catch (executionErr: any) {
-        const errorMsg = `Execution threw an error for tool [${toolId}]: ${executionErr.message}`;
+      } catch (executionErr: unknown) {
+        const message = executionErr instanceof Error ? executionErr.message : String(executionErr);
+        const errorMsg = `Execution threw an error for tool [${toolId}]: ${message}`;
         this.logger.error('ToolRunner', errorMsg);
 
         const durationMs = Math.round(performance.now() - startTime);
-        toolResult = {
-          success: false,
-          error: {
-            code: 'EXECUTION_ERROR',
-            message: errorMsg,
-            details: executionErr
-          },
-          durationMs,
-          timestamp: new Date().toISOString()
-        };
+        toolResult = this.createFailedResult<TResult>('EXECUTION_ERROR', errorMsg, durationMs, executionErr);
       }
     } finally {
       // 7. Guaranteed resource cleanup
       try {
         await tool.cleanup();
-      } catch (cleanupErr: any) {
-        this.logger.error('ToolRunner', `Cleanup failed for tool [${toolId}]: ${cleanupErr.message}`);
+      } catch (cleanupErr: unknown) {
+        const message = cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr);
+        this.logger.error('ToolRunner', `Cleanup failed for tool [${toolId}]: ${message}`);
         // We do not overwrite the main execution result if cleanup fails, but we log it
       }
     }
@@ -311,3 +269,4 @@ export class ToolRunner {
     return toolResult;
   }
 }
+

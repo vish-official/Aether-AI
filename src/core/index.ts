@@ -9,6 +9,12 @@ export { ToolManager } from './tool-manager';
 export { ToolRunner } from './tool-runner';
 export { OpenApplicationTool } from './open-application-tool';
 export { PermissionManager } from './permission-manager';
+export {
+  ToolError,
+  ToolRegistrationError,
+  ToolExecutionError,
+  PermissionError
+} from './errors';
 
 // Types & Interfaces
 export type { SystemConfig } from './config';

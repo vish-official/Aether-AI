@@ -1,5 +1,6 @@
 import { EventBus } from './event-bus';
 import { Logger } from './logger';
+import { PermissionError } from './errors';
 
 /**
  * Represents a registered permission in the Aether security framework.
@@ -29,8 +30,8 @@ export class PermissionManager {
   private logger: Logger;
 
   constructor(eventBus: EventBus, logger: Logger) {
-    if (!eventBus) throw new Error('PermissionManager Error: EventBus is required.');
-    if (!logger) throw new Error('PermissionManager Error: Logger is required.');
+    if (!eventBus) throw new PermissionError('EventBus is required.', 'MISSING_DEPENDENCY');
+    if (!logger) throw new PermissionError('Logger is required.', 'MISSING_DEPENDENCY');
 
     this.eventBus = eventBus;
     this.logger = logger;
@@ -64,12 +65,12 @@ export class PermissionManager {
    */
   public register(permission: Permission): void {
     if (!permission || !permission.name) {
-      throw new Error('Permission Error: Invalid permission instance or missing name.');
+      throw new PermissionError('Invalid permission instance or missing name.', 'INVALID_PERMISSION');
     }
 
     const name = permission.name;
     if (this.permissions.has(name)) {
-      throw new Error(`Permission Error: Permission with name [${name}] is already registered.`);
+      throw new PermissionError(`Permission with name [${name}] is already registered.`, 'DUPLICATE_PERMISSION');
     }
 
     this.permissions.set(name, permission);
@@ -106,7 +107,7 @@ export class PermissionManager {
   public grant(name: string): void {
     const permission = this.permissions.get(name);
     if (!permission) {
-      throw new Error(`Permission Error: Permission with name [${name}] is not registered.`);
+      throw new PermissionError(`Permission with name [${name}] is not registered.`, 'PERMISSION_NOT_FOUND');
     }
 
     if (!permission.granted) {
@@ -126,7 +127,7 @@ export class PermissionManager {
   public revoke(name: string): void {
     const permission = this.permissions.get(name);
     if (!permission) {
-      throw new Error(`Permission Error: Permission with name [${name}] is not registered.`);
+      throw new PermissionError(`Permission with name [${name}] is not registered.`, 'PERMISSION_NOT_FOUND');
     }
 
     if (permission.granted) {
