@@ -37,6 +37,13 @@ Any modification to Aether's codebase must align with and trace back to the prin
   * Module dependency restrictions (downward layout, no circularity).
   * Pluggable schema architectures for Robotics, Vehicles, and Wearables.
 
+### [04_Memory_Principles.md - Aether Memory Principles](04_Memory_Principles.md)
+* **Status:** 🟡 DRAFT / PROPOSED (v0.1)  
+* **Abstract:** Establishes the core, technology-independent behavioral and semantic guidelines for memory systems within Aether.
+* **Key Content:**
+  * 12 core memory principles ensuring user ownership, explainability, confidence separation, and context safety.
+  * Technology-independent architectural definitions for long-term memory.
+
 ---
 
 ## 🔮 Coming Soon (Future System Specifications)
@@ -46,7 +53,7 @@ To prepare for future implementation phases, the following specifications are cu
 | Spec ID | Document Title | Target Phase | Status | Summary |
 | :---: | :--- | :---: | :---: | :--- |
 | **SEC-03-EVT** | `03_Event_Mesh_Protocol.md` | Phase 2 | 🟡 DRAFTING | Protocol Buffer payloads, event queue scheduling priorities, and cryptographic signature envelopes. |
-| **SEC-04-MEM** | `04_Memory_Engine_Schema.md` | Phase 3 | 💤 PLANNED | Local vector indexing databases, episodic storage schemas, and CRDT synchronization strategies. |
+| **SEC-04-MEM** | `04_Memory_Engine_Schema.md` | Phase 3 | 🟡 DRAFTING | Local vector indexing databases, episodic storage schemas, and CRDT synchronization strategies based on Memory Principles. |
 | **SEC-05-AI** | `05_AI_Reasoning_Sockets.md` | Phase 4 | 💤 PLANNED | Modular model driver bindings, local SLM inference hardware wrappers, and token sequence routes. |
 | **SEC-06-WASM**| `06_Sandbox_Security_Matrix.md`| Phase 5 | 💤 PLANNED | Wasm system interface (WASI) restriction tables, Capability Token lifecycles, and memory limiters. |
 | **SEC-07-PLN** | `07_Planner_Task_Graphs.md` | Phase 6 | 💤 PLANNED | Execution graph decompositions, deterministic verification loops, and automated rollback scripts. |
