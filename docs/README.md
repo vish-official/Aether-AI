@@ -48,10 +48,18 @@ Any modification to Aether's codebase must align with and trace back to the prin
 * **Status:** 🟡 DRAFT / PROPOSED (v0.2)  
 * **Abstract:** Defines the universal conceptual structure of every memory within Aether, serving as the foundational, atomic unit of retention.
 * **Key Content:**
-* Universal schema fields (Memory ID, Domain, Content, Context, Source, Evidence, Confidence, Status, Timestamps, Tags, and Metadata).
-* Conceptual memory states (Active, Pending, Archived, Invalidated) focused on object definition boundaries.
-* Direct relational properties supporting typed memory connections (Derived From, Related To, Part Of, Supports, Conflicts With).
-* Future-proof compatibility guarantees and metadata extensibility limits.
+  * Universal schema fields (Memory ID, Domain, Content, Context, Source, Evidence, Confidence, Status, Timestamps, Tags, and Metadata).
+  * Conceptual memory states (Active, Pending, Archived, Invalidated) focused on object definition boundaries.
+  * Direct relational properties supporting typed memory connections (Derived From, Related To, Part Of, Supports, Conflicts With).
+  * Future-proof compatibility guarantees and metadata extensibility limits.
+
+### [03_Memory_Types.md - Core Memory Types](03_Memory_Types.md)
+* **Status:** 🟡 DRAFT / PROPOSED (v0.1)  
+* **Abstract:** Defines the eight conceptual memory types supported by Aether Memory Core v1 and details their individual behavioral properties and reasoning interactions.
+* **Key Content:**
+  * Logical boundaries, lifetimes, updates, deletion policies, user authority boundaries, and reasoning usage for all eight first-generation memory types (Identity, Preference, Project, Working, Reflection, Knowledge, User Model, Self Model).
+  * Decoupled design rationale separating user-asserted factual layers from synthesized cognitive patterns.
+  * The conceptual flow of memory from transient capture to high-level cognitive models.
 
 ---
 
