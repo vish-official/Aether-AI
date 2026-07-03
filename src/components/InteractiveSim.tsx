@@ -97,6 +97,21 @@ const SIM_EVENTS: SimulationEvent[] = [
       { component: 'User Consent overlay manager', action: 'Prompt active desktop UI with system bypass choices', status: 'warning', payload: 'Awaiting visual confirmation (Desktop popup locked)' },
       { component: 'Sandbox Jail Manager', action: 'Suspend utility_transcriber_2b4 execution threads', status: 'success', payload: 'Process paused cleanly pending response' }
     ]
+  },
+  {
+    id: 'tool-system-execution',
+    name: 'Tool Interface & Execution Lifecycle',
+    subsystem: 'AetherToolSystem',
+    description: 'Instantiate, register, validate, and execute an Aether system tool through the core Event Bus and generic Tool Interface.',
+    steps: [
+      { component: 'ToolRegistry', action: 'Initialize and register FileReadTool into the platform', status: 'success', payload: 'tool.registered: FileReadTool (id: fs-file-read, category: filesystem, version: 1.0.0)' },
+      { component: 'AetherGuard', action: 'Validate execution policy permissions for the caller', status: 'success', payload: 'Permissions checked: fs.read (GRANTED)' },
+      { component: 'ToolRunner', action: 'Invoke validate() on FileReadTool with arguments', status: 'success', payload: 'Arguments validated successfully: { path: "/vfs/documents/notes.txt" }' },
+      { component: 'ToolRunner', action: 'Fire tool.executing lifecycle event & execute() tool', status: 'info', payload: 'tool.executing event published. Commencing low-level block retrieval...' },
+      { component: 'FileReadTool', action: 'Read system virtual file blocks and decode content', status: 'success', payload: 'Retrieved 4.2 KB; Content loaded cleanly' },
+      { component: 'ToolRunner', action: 'Fire tool.completed lifecycle event with ToolResult object', status: 'success', payload: 'tool.completed: { success: true, durationMs: 4, timestamp: "2026-07-03..." }' },
+      { component: 'FileReadTool', action: 'Invoke cleanup() to release system resources', status: 'success', payload: 'File stream closed and temporary buffers cleared' }
+    ]
   }
 ];
 

@@ -20,11 +20,12 @@ import {
   Sliders,
   Sparkles,
   ExternalLink,
-  Lock
+  Lock,
+  Wrench
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type SidebarOption = 'philosophy' | 'glossary' | 'identity' | 'memory' | 'mesh' | 'runtime' | 'mind' | 'guard' | 'simulation';
+type SidebarOption = 'philosophy' | 'glossary' | 'identity' | 'memory' | 'mesh' | 'runtime' | 'mind' | 'guard' | 'simulation' | 'tools';
 
 export default function App() {
   const [selectedOption, setSelectedOption] = useState<SidebarOption>('philosophy');
@@ -47,6 +48,7 @@ export default function App() {
       case 'runtime': return <Layers className={`${size} text-slate-400`} />;
       case 'mind': return <Brain className={`${size} text-purple-400`} />;
       case 'guard': return <Lock className={`${size} text-rose-400`} />;
+      case 'tools': return <Wrench className={`${size} text-indigo-400`} />;
       default: return <Cpu className={`${size} text-indigo-400`} />;
     }
   };

@@ -77,6 +77,28 @@ export class Logger {
       this.info('Logger', `[Observed Event: modules.loaded] All registered modules loaded: ${event.payload.loadedModules?.join(', ')}`);
     });
 
+    // Tool System lifecycle events logging
+    eventBus.subscribe('tool.registered', (event) => {
+      this.info('Logger', `[Observed Event: tool.registered] Tool registered: ${event.payload.metadata?.name} (id: ${event.payload.toolId})`);
+    });
+
+    eventBus.subscribe('tool.executing', (event) => {
+      this.info('Logger', `[Observed Event: tool.executing] Tool execution started: ${event.payload.toolId}`);
+    });
+
+    eventBus.subscribe('tool.completed', (event) => {
+      const duration = event.payload.result?.durationMs ?? 0;
+      this.info('Logger', `[Observed Event: tool.completed] Tool completed successfully: ${event.payload.toolId} (duration: ${duration}ms)`);
+    });
+
+    eventBus.subscribe('tool.failed', (event) => {
+      this.error('Logger', `[Observed Event: tool.failed] Tool failed: ${event.payload.toolId}. Error: ${event.payload.error}`);
+    });
+
+    eventBus.subscribe('tool.unloaded', (event) => {
+      this.info('Logger', `[Observed Event: tool.unloaded] Tool unloaded: ${event.payload.toolId}`);
+    });
+
     eventBus.subscribe('engine.started', () => {
       this.info('Logger', `[Observed Event: engine.started] Core engine transitioned to RUNNING state.`);
     });

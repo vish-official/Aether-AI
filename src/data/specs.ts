@@ -738,5 +738,121 @@ message MeshEvent {
       selected: "Cryptographic Capability-Based Security Tokens (Object Capabilities / ocap)",
       justification: "Standard ACLs and Sudo models are prone to privilege escalation, side-channel leaks, and ambient authority bypasses. Capability Tokens explicitly pass power with execution context, ensuring total sandboxing control and granular security."
     }
+  },
+  {
+    id: "tools",
+    title: "AetherToolSystem",
+    subtitle: "Sovereign Extensible Tool Execution Framework",
+    purpose: "Provide a standardized, strongly-typed, and secure interface for registering and executing auxiliary tools within the Aether OS runtime.",
+    overview: "AetherToolSystem defines a generic Tool Interface and execution lifecycle designed to abstract any capabilities (such as filesystem access, hardware device capture, network utilities, or cognitive services) into modular, pluggable components. Every tool operates as a black-box service governed by AetherGuard's capability permissions, integrating natively with the decoupled Event Bus to broadcast status and execution events.",
+    responsibilities: [
+      "Define standard tool lifecycle phases: initialization, parameter validation, asynchronous execution, and cleanup.",
+      "Provide a technology-agnostic interface supporting various future categories like Open Application, File Read/Write, Web Search, Terminal, Camera, and Microphone.",
+      "Enforce standardized success/failure ToolResult states including durations, error details, and typed schemas.",
+      "Publish structured status events to the system Event Bus for telemetry, audit logging, and tracing.",
+      "Decouple tool implementation details from the core orchestration engine, ensuring unlimited extendability."
+    ],
+    architecture: {
+      text: "The Tool System operates through a generic execution bridge. When an agent or subsystem requests a tool, AetherGuard validates the caller's capability token. Once authorized, the Tool System initializes the tool, performs deep syntactic and semantic validation of the input arguments, executes the action, returns a standardised ToolResult object, and automatically runs memory and handle cleanup processes.",
+      diagram: {
+        nodes: [
+          { id: "tool-runner", label: "Tool Execution Runner", type: "kernel", description: "Orchestrates the tool lifecycle sequence: validate -> execute -> cleanup." },
+          { id: "event-bus-sub", label: "Event Bus Broker", type: "bus", description: "Propagates tool lifecycle events (registered, executing, completed, failed, unloaded)." },
+          { id: "aether-guard-sec", label: "AetherGuard", type: "security", description: "Performs capability verification before execution commences." },
+          { id: "filesystem-tool", label: "ITool (FileRead/Write)", type: "client", description: "Concrete implementation of the tool interface." }
+        ],
+        edges: [
+          { from: "tool-runner", to: "aether-guard-sec", label: "Request Access Authorization" },
+          { from: "tool-runner", to: "filesystem-tool", label: "Trigger validation & execute()" },
+          { from: "tool-runner", to: "event-bus-sub", label: "Publish Lifecycle Telemetry Events" }
+        ]
+      },
+      ascii: `
++------------------------------------------+
+|          TOOL EXECUTION RUNNER           |
++------------------------------------------+
+      |                  |             |
+ [Auth Grant]     [Lifecycle Call] [Broadcast]
+      v                  v             v
++------------+     +------------+ +------------+
+| AetherGuard|     | ITool      | | Event Bus  |
+| Validator  |     | (Instance) | | (Telemetry)|
++------------+     +------------+ +------------+
+      `
+    },
+    interfaces: [
+      {
+        name: "ITool<TArgs, TResult>",
+        type: "typescript",
+        description: "The core generic contract implemented by every auxiliary tool within Aether.",
+        code: `export interface ITool<TArgs = any, TResult = any> {
+  readonly metadata: ToolMetadata;
+  getStatus(): ToolStatus;
+  initialize(context: ModuleContext): Promise<void>;
+  validate(args: TArgs): Promise<boolean>;
+  execute(args: TArgs): Promise<ToolResult<TResult>>;
+  cleanup(): Promise<void>;
+}`
+      },
+      {
+        name: "ToolResult<T>",
+        type: "typescript",
+        description: "Unified wrapper returned by all tool execution paths, ensuring consistent return shapes.",
+        code: `export interface ToolResult<T = any> {
+  success: boolean;
+  output?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  durationMs: number;
+  timestamp: string;
+}`
+      }
+    ],
+    internalWorkflow: [
+      "A subsystem requests execution of 'fs-file-read' with parameter '{ path: \"/vfs/docs/logs.txt\" }'.",
+      "AetherGuard evaluates capabilities; the signature is verified, and authorization is granted.",
+      "The tool execution pipeline invokes 'validate()' on the FileRead tool to check path format bounds.",
+      "The Runner fires a 'tool.executing' event to the Event Bus containing the starting timestamp and non-sensitive arguments.",
+      "The tool's 'execute()' runs to retrieve the raw file contents, computing the exact elapsed execution duration.",
+      "The runner fires a 'tool.completed' event to the Event Bus containing the unified ToolResult.",
+      "The runner fires 'cleanup()' to release read locks and clear volatile memory frames."
+    ],
+    dependencies: [
+      "AetherGuard (for capability token checks)",
+      "EventBus (for lifecycle event propagation)",
+      "Logger (for audit-trail log consolidation)"
+    ],
+    failureCases: [
+      {
+        scenario: "Tool execution exceeds maximum execution time ceiling (e.g., hanging socket)",
+        impact: "Medium. Subsystems wait indefinitely for the tool's promise to resolve.",
+        mitigation: "Strict execution timeouts managed by the Tool Runner. If a tool fails to return within the allotted budget (e.g., 5000ms), the runner cancels the context, throws a TIMEOUT_EXCEEDED error, fires 'tool.failed', and invokes 'cleanup()'."
+      },
+      {
+        scenario: "Tool arguments fail syntactic or schema validation boundaries",
+        impact: "Low. Execution is rejected immediately.",
+        mitigation: "The 'validate()' method acts as a strict guard. If arguments are malformed, execution is aborted before any hardware resources are allocated or processes spawned, preventing buffer-overflows or shell-injection vectors."
+      }
+    ],
+    security: [
+      "Strict parameter containment: Tools can never execute shell expansions or wildcards directly; inputs are sanitized.",
+      "Isolated environments: All system-level side-effects are mediated through host runtime bridges governed by AetherGuard."
+    ],
+    scalability: [
+      "Concurrent execution limits: The runner limits concurrent tool executions to avoid CPU/memory resource exhaustion on host hardware.",
+      "Lean imports: Tools are dynamically loaded and initialized only upon explicit request, keeping the start-up footprint extremely low."
+    ],
+    futureExpansion: [
+      "Self-documenting API: Automatic generation of JSON schemas from the TypeScript arguments types for zero-shot LLM function calling compatibility.",
+      "Distributed tool mesh: Register and execute tools across local P2P connected sibling device runtimes."
+    ],
+    decisionSummary: {
+      alternatives: ["Direct, unstructured platform API execution", "Pre-coupled monolith tool bundle"],
+      selected: "Standardized Generic Tool Interface with Lifecycle and Event Decoupling",
+      justification: "Direct platform API executions introduce severe security risks and make it impossible to audit access. A pre-coupled monolith prevents modularity and third-party developer extensibility. The generic Tool Interface preserves zero-trust security and allows safe, modular, dynamic additions."
+    }
   }
 ];

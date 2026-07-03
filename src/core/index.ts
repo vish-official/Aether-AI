@@ -12,3 +12,13 @@ export type { LogLevel, LogMessage, LogListener } from './logger';
 export type { SystemEvent, EventHandler } from './event-bus';
 export type { ModuleContext, IModule, ModuleStatus } from './module-loader';
 export type { SystemState } from './engine';
+export type {
+  ToolCategory,
+  ToolPlatform,
+  ToolStatus,
+  ToolMetadata,
+  ToolResult,
+  ITool,
+  ToolEventPayloads
+} from './tool';
+
