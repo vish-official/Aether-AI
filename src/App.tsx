@@ -4,6 +4,7 @@ import { SpecDocument } from './types';
 import SpecificationViewer from './components/SpecificationViewer';
 import ArchitectureDiagram from './components/ArchitectureDiagram';
 import InteractiveSim from './components/InteractiveSim';
+import MasterBlueprint from './components/MasterBlueprint';
 import {
   Shield,
   Database,
@@ -25,10 +26,10 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type SidebarOption = 'philosophy' | 'glossary' | 'identity' | 'memory' | 'mesh' | 'runtime' | 'mind' | 'guard' | 'simulation' | 'tools';
+type SidebarOption = 'blueprint' | 'philosophy' | 'glossary' | 'identity' | 'memory' | 'mesh' | 'runtime' | 'mind' | 'guard' | 'simulation' | 'tools';
 
 export default function App() {
-  const [selectedOption, setSelectedOption] = useState<SidebarOption>('philosophy');
+  const [selectedOption, setSelectedOption] = useState<SidebarOption>('blueprint');
   const [glossarySearch, setGlossarySearch] = useState<string>('');
   const [subsystemTab, setSubsystemTab] = useState<'spec' | 'diagram'>('spec');
 
@@ -105,6 +106,21 @@ export default function App() {
                 Core System Specs
               </h3>
               <div className="space-y-1">
+                <button
+                  id="nav-blueprint"
+                  onClick={() => setSelectedOption('blueprint')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all ${
+                    selectedOption === 'blueprint'
+                      ? 'bg-[#15151A] text-white font-medium shadow-sm border-l-2 border-indigo-500'
+                      : 'text-white/50 hover:text-white/80 hover:bg-[#15151A]/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Layers className="w-4 h-4 text-indigo-400" />
+                    <span>Master Blueprint</span>
+                  </div>
+                  <ChevronRight className="w-3 h-3 opacity-60" />
+                </button>
                 <button
                   id="nav-philosophy"
                   onClick={() => setSelectedOption('philosophy')}
@@ -206,6 +222,20 @@ export default function App() {
           
           <AnimatePresence mode="wait">
             
+            {/* 0. Master Blueprint View */}
+            {selectedOption === 'blueprint' && (
+              <motion.div
+                key="blueprint"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+                id="view-blueprint"
+              >
+                <MasterBlueprint />
+              </motion.div>
+            )}
+
             {/* 1. Philosophy View */}
             {selectedOption === 'philosophy' && (
               <motion.div
