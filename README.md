@@ -109,15 +109,15 @@ For a detailed exploration of Aether's internals, see [docs/02_System_Architectu
 
 ## 06. Current Development Status & Roadmap
 
-The Aether project is currently in the architectural validation phase. We are laying down the strict constitutional laws and technical blueprints before initiating core kernel construction.
+The Aether project has completed the architectural specification phase (Phase 0) and the Core Engine & Bootloader phase (Phase 1). The core kernel subsystems—SecurityEnclave (AES-256-GCM + ECDSA), StorageAdapter (encrypted filesystem), and IdentityBridge (sovereign DID identity)—are now production-ready and fully tested with an automated test suite.
 
 ### Progress Board
 
 | Phase | Milestone Name | Status | Target Timeline |
 | :---: | :--- | :---: | :---: |
 | **0** | **System Architecture Specification** | ✅ Complete | Q2 2026 |
-| **1** | **Core Engine & Bootloader** | ⬜ Planned | Q3 2026 |
-| **2** | **Communication Layer & Event Mesh** | ⬜ Planned | Q4 2026 |
+| **1** | **Core Engine & Bootloader** | ✅ Complete | Q3 2026 |
+| **2** | **Communication Layer & Event Mesh** | 🔄 In Progress | Q4 2026 |
 | **3** | **Memory Engine & Semantic Graph** | ⬜ Planned | Q1 2027 |
 | **4** | **AI Runtime & Local inference Drivers** | ⬜ Planned | Q2 2027 |
 | **5** | **Tool Sandbox & Plugin System** | ⬜ Planned | Q3 2027 |
