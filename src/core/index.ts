@@ -10,6 +10,9 @@ export { ToolRunner } from './tool-runner';
 export { OpenApplicationTool } from './open-application-tool';
 export { PermissionManager } from './permission-manager';
 export { NodeRuntime } from './runtime';
+export { SecurityEnclaveModule } from './security-enclave';
+export { StorageAdapterModule } from './storage-adapter';
+export { IdentityBridgeModule } from './identity-bridge';
 export {
   ToolError,
   ToolRegistrationError,
@@ -19,6 +22,9 @@ export {
 
 // Types & Interfaces
 export type { IRuntime, PlatformOS } from './runtime';
+export type { ISecurityEnclave } from './security-enclave';
+export type { IStorageAdapter } from './storage-adapter';
+export type { IIdentityBridge } from './identity-bridge';
 export type { SystemConfig } from './config';
 export type { OpenApplicationArgs } from './open-application-tool';
 export type { LogLevel, LogMessage, LogListener } from './logger';
